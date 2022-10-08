@@ -1,0 +1,10 @@
+{
+  "name": "Animation Changer",
+  "author": "Justin Marentette",
+  "flags": [],
+  "publish": {
+    "tags": ["utility", "boot-animation"],
+    "description": "A boot/suspend animation changer/randomizer plugin.",
+    "image": "https://raw.githubusercontent.com/TheLogicMaster/SDH-AnimationChanger/main/assets/screenshot.jpg"
+  }
+}
