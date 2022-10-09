@@ -30,7 +30,7 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
 
     const showError = (msg: string) => {
         serverAPI.toaster.toast({
-            title: <div>Error</div>,
+            title: <div>Animation Changer Error</div>,
             body: <div>{msg}</div>
         })
     }
@@ -75,8 +75,8 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
                     label="Randomize on Boot"
                     description="Select a new animation on boot-up"
                     checked={randomize}
-                    onChange={(randomize: boolean) => {
-                        saveConfig(current, randomize).then()
+                    onChange={async (randomize: boolean) => {
+                        await saveConfig(current, randomize)
                         setRandomize(randomize)
                     }}
                 />
@@ -88,8 +88,8 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
                     description="The current animation"
                     rgOptions={animations}
                     selectedOption={current}
-                    onChange={(data) => {
-                        saveConfig(data.data, randomize).then()
+                    onChange={async (data) => {
+                        await saveConfig(data.data, randomize)
                         setCurrent(data.data)
                     }}
                 />
@@ -99,9 +99,9 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
                 <ButtonItem
                     layout="below"
                     description="Randomize the current animation"
-                    onClick={() => {
+                    onClick={async () => {
                         let newCurrent = Math.floor(Math.random() * (animations.length - 1)) + 1
-                        saveConfig(newCurrent, randomize).then()
+                        await saveConfig(newCurrent, randomize)
                         setCurrent(newCurrent)
                     }}
                 >
@@ -113,8 +113,8 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
                 <ButtonItem
                     layout="below"
                     description="Reload configuration and animations"
-                    onClick={() => {
-                        loadConfig().then()
+                    onClick={async () => {
+                        await loadConfig()
                     }}
                 >
                     Reload
@@ -126,7 +126,7 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
 
 export default definePlugin((serverApi: ServerAPI) => {
     return {
-        title: <div className={staticClasses.Title}>Animation Changer Plugin</div>,
+        title: <div className={staticClasses.Title}>Animation Changer</div>,
         content: <Content serverAPI={serverApi}/>,
         icon: <FaRandom/>
     };

@@ -21,3 +21,8 @@ Example `config.json` configuration:
 ```
 `"boot"` refers to the main boot animation, `"suspend"` refers to the suspend animation played when
 not in a game, and `"throbber"` refers to the animation played when suspending from in-game.
+
+## Manual Install
+Install pnpm and run `pnpm i` in the repo directory. Build with: `pnpm run build`. Copying the
+project to the SDH plugins directory ~/homebrew/plugins at this point will install it. The VSCode
+task does this cleanly without any unnecessary files and handles file permissions. 
