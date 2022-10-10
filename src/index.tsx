@@ -7,10 +7,18 @@ import {
     staticClasses,
     ToggleField,
     DropdownItem,
-    DropdownOption
+    DropdownOption,
+    Tabs,
+    Router
 } from "decky-frontend-lib";
-import {useEffect, useState, VFC} from "react";
-import {FaRandom} from "react-icons/fa";
+import { useEffect, useState, FC } from "react";
+import { FaRandom } from "react-icons/fa";
+
+import {
+    AnimationBrowserPage,
+    AboutPage,
+    UninstallAnimationPage
+} from "./animation-manager";
 
 interface SaveConfigArgs {
     current: number
@@ -23,7 +31,7 @@ interface LoadConfigArgs {
     animations: string[]
 }
 
-const Content: VFC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
+const Content: FC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
     const [randomize, setRandomize] = useState<boolean>(false);
     const [animations, setAnimations] = useState<DropdownOption[]>([]);
     const [current, setCurrent] = useState<number>(0);
@@ -70,6 +78,19 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
 
     return (
         <PanelSection>
+
+            <PanelSectionRow>   
+                <ButtonItem
+                layout="below"
+                onClick={() => {
+                    Router.CloseSideMenus();
+                    Router.Navigate('/animation-manager');
+                }}
+                >
+                Manage Animations
+                </ ButtonItem>
+            </PanelSectionRow>
+
             <PanelSectionRow>
                 <ToggleField
                     label="Randomize on Boot"
@@ -124,7 +145,55 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
     );
 };
 
+
+const AnimationManagerRouter: FC = () => {
+
+    const [ currentTabRoute, setCurrentTabRoute ] = useState<string>("AnimationBrowser");
+
+    return (
+        <div
+            style={{
+            marginTop: "40px",
+            height: "calc(100% - 40px)",
+            background: "#0005",
+            }}
+        >
+            <Tabs
+            title="Animation Manager"
+            activeTab={currentTabRoute}
+            // @ts-ignore
+            onShowTab={(tabID: string) => {
+                setCurrentTabRoute(tabID);
+            }}
+            tabs={[
+                {
+                    title: "Browse Animations",
+                    content: <AnimationBrowserPage />,
+                    id: "AnimationBrowser",
+                },
+                {
+                    title: "Installed Animations",
+                    content: <UninstallAnimationPage />,
+                    id: "UninstallAnimations",
+                },
+                {
+                    title: "About Animation Changer",
+                    content: <AboutPage />,
+                    id: "AboutAnimationChanger",
+                }
+            ]}
+            />
+        </div>
+    );
+    
+};
+  
 export default definePlugin((serverApi: ServerAPI) => {
+
+    serverApi.routerHook.addRoute("/animation-manager", () => (
+        <AnimationManagerRouter />
+    ));
+
     return {
         title: <div className={staticClasses.Title}>Animation Changer</div>,
         content: <Content serverAPI={serverApi}/>,
