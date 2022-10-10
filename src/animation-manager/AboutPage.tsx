@@ -20,6 +20,16 @@ export const AboutPage: FC = () => {
       <h2
         style={{ fontWeight: "bold", fontSize: "1.5em", marginBottom: "0px" }}
       >
+        Credits
+      </h2>
+      <ul style={{ marginTop: "0px", marginBottom: "0px" }}>
+        <li>
+          <span>Beebles: UI Elements - github.com/beebls</span>
+        </li>
+      </ul>
+      <h2
+        style={{ fontWeight: "bold", fontSize: "1.5em", marginBottom: "0px" }}
+      >
         Support
       </h2>
       <span>
