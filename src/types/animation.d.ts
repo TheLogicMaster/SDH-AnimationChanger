@@ -3,24 +3,19 @@ import { ServerAPI } from 'decky-frontend-lib';
 
 export interface RepoResult {
   id: string;
-  slug: string;
-  title: string;
-  content: string;
-  user: RepoUser;
-  thumbnail: string;
-  video: string;
-  video_preview: string;
-  created_at: string;
-  updated_at: string;
-  url: string;
+  name: string;
+  preview_image: string;
+  preview_video: string;
+  author: string;
+  description: string;
+  last_changed: string;
+  source: string;
+  download_url: string;
   likes: number;
   downloads: number;
-}
-
-export interface RepoUser {
-  id: number;
-  steam_name: string;
-  steam_avatar: string;
+  version: string;
+  target: string;
+  manifest_version: number;
 }
 
 export interface Animation {

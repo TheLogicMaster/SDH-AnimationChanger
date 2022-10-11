@@ -32,7 +32,7 @@ const RepoResultCard: FC<{ result: RepoResult, onActivate: () => void }> = ({ re
           
           <div className="gamepadhomewhatsnew_EventImageWrapper_XLJ9p">
             <img
-              src={result.thumbnail}
+              src={result.preview_image}
               style={{ maxWidth: '100%', height: 'auto', width: 'auto' }}
               className="gamepadhomewhatsnew_EventImage_116GS"/>
             <div className="gamepadhomewhatsnew_Darkener_1n_1X"></div>
@@ -46,15 +46,15 @@ const RepoResultCard: FC<{ result: RepoResult, onActivate: () => void }> = ({ re
                 <div className="localdateandtime_ShortDateAndTime_4K3Bl">{result.likes}</div>
               </Focusable>
             </div>
-            <div className="gamepadhomewhatsnew_Title_1QLHG">{result.title}</div>
+            <div className="gamepadhomewhatsnew_Title_1QLHG">{result.name}</div>
             <div className="gamepadhomewhatsnew_GameIconAndName_1jXSh">
-              <div
-                className="libraryassetimage_Container_1R9r2 libraryassetimage_GreyBackground_2E7G8 gamepadhomewhatsnew_GameIcon_2RrB8">
-                <img src={result.user.steam_avatar}
-                  className="libraryassetimage_Image_24_Au libraryassetimage_Visibility_3d_bT libraryassetimage_Visible_yDr03"
-                  alt={result.user.steam_name} />
-              </div>
-              <div className="gamepadhomewhatsnew_GameName_3H9W-">{result.user.steam_name}</div>
+              {/*<div*/}
+              {/*  className="libraryassetimage_Container_1R9r2 libraryassetimage_GreyBackground_2E7G8 gamepadhomewhatsnew_GameIcon_2RrB8">*/}
+              {/*  <img src={result.author}*/}
+              {/*    className="libraryassetimage_Image_24_Au libraryassetimage_Visibility_3d_bT libraryassetimage_Visible_yDr03"*/}
+              {/*    alt={result.author} />*/}
+              {/*</div>*/}
+              <div className="gamepadhomewhatsnew_GameName_3H9W-">{result.author}</div>
             </div>
           </div>
 
