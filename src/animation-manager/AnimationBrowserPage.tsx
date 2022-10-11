@@ -1,6 +1,15 @@
 import { useEffect, FC } from 'react';
-import { Focusable, PanelSectionRow, Dropdown } from 'decky-frontend-lib';
-import RepoResultCard from './RepoResultCard';
+
+import {
+  Focusable,
+  PanelSectionRow,
+  Dropdown,
+  showModal,
+  ConfirmModal
+} from 'decky-frontend-lib';
+
+import RepoResultCard from '../components/RepoResultCard';
+import RepoResultModal from '../components/RepoResultModal';
 
 import { useAnimationContext } from '../state';
 
@@ -10,9 +19,7 @@ export const AnimationBrowserPage: FC = () => {
 
   // Runs upon opening the page
   useEffect(() => {
-    
     searchRepo();
-    
   }, []);
 
   return (
@@ -25,7 +32,12 @@ export const AnimationBrowserPage: FC = () => {
       
       <Focusable style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', columnGap: '15px' }}>
 
-        {repoResults.map((result) => <RepoResultCard key={result.id} result={result} />)}
+        {repoResults.map((result) => <RepoResultCard
+        key={result.id}
+        result={result}
+        onActivate={() => {
+          showModal(<RepoResultModal result={result} />);
+        }} />)}
 
       </Focusable>
         
