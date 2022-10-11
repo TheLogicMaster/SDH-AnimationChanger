@@ -15,7 +15,7 @@ import {
 import { useEffect, useState, FC } from "react";
 import { FaRandom } from "react-icons/fa";
 
-import { AnimationChangerContext, AnimationChangerContextInterface } from './state';
+import { AnimationProvider } from './state';
 
 
 import {
@@ -194,24 +194,18 @@ const AnimationManagerRouter: FC = () => {
   
 export default definePlugin((serverApi: ServerAPI) => {
 
-    const test: AnimationChangerContextInterface = {
-        name: "Test",
-        author: "Testing",
-        url: "123"
-    };
-
     serverApi.routerHook.addRoute("/animation-manager", () => (
-        <AnimationChangerContext.Provider value={test}>
+        <AnimationProvider serverAPI={serverApi}>
             <AnimationManagerRouter />
-        </AnimationChangerContext.Provider>
+        </AnimationProvider>
     ));
 
     return {
         title: <div className={staticClasses.Title}>Animation Changer</div>,
         content: (
-            <AnimationChangerContext.Provider value={test}>
+            <AnimationProvider serverAPI={serverApi}>
                 <Content serverAPI={serverApi}/>
-            </AnimationChangerContext.Provider>
+            </AnimationProvider>
         ),
         icon: <FaRandom/>
     };
