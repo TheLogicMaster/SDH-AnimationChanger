@@ -1,4 +1,7 @@
 import { useEffect, FC } from 'react';
+import { Focusable, PanelSectionRow, Dropdown } from 'decky-frontend-lib';
+import RepoResultCard from './RepoResultCard';
+
 import { useAnimationContext } from '../state';
 
 export const AnimationBrowserPage: FC = () => {
@@ -13,23 +16,20 @@ export const AnimationBrowserPage: FC = () => {
   }, []);
 
   return (
-    <div>
-      <h2
-        style={{ fontWeight: "bold", fontSize: "1.5em", marginBottom: "0px" }}
-      >
+    <>
+      <Focusable>
+        <PanelSectionRow>
+            {searchTotal} results found
+        </PanelSectionRow>
+      </Focusable>
+      
+      <Focusable style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', columnGap: '15px' }}>
+
+        {repoResults.map((result) => <RepoResultCard key={result.id} result={result} />)}
+
+      </Focusable>
         
-        TOTAL: {searchTotal}
-
-      </h2>
-
-      {repoResults.map((result) => (
-          <div key={result.id}>
-            <img src={result.thumbnail} width={300} />
-            {result.title}
-            <hr />
-          </div>
-        ))}
-    </div>
+    </>
   );
 };
   
