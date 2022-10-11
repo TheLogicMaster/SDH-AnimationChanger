@@ -1,7 +1,8 @@
 import {
   createContext,
   FC,
-  useState
+  useState,
+  useContext
 } from 'react';
 
 import {
@@ -40,3 +41,5 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
   );
 
 }
+
+export const useAnimationContext = () => useContext(AnimationContext) as AnimationContextType;
