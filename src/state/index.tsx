@@ -55,7 +55,7 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
     if(response.success) {
       const data = JSON.parse(response.result.body);
       setRepoResults(data.props.posts.data);
-      setSearchTotal(data.props.meta.total);
+      setSearchTotal(data.props.posts.meta.total);
     }
 
   }
