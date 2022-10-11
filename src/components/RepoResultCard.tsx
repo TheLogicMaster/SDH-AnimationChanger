@@ -2,7 +2,7 @@ import { FC } from 'react';
 import { RepoResult } from '../types/animation';
 import { Focusable } from 'decky-frontend-lib';
 
-const RepoResultCard: FC<{ result: RepoResult }> = ({ result }) => {
+const RepoResultCard: FC<{ result: RepoResult, onActivate: () => void }> = ({ result, onActivate }) => {
 
   return (      
 
@@ -24,7 +24,7 @@ const RepoResultCard: FC<{ result: RepoResult }> = ({ result }) => {
         <Focusable
         focusWithinClassName='gpfocuswithin'
         className="gamepadhomewhatsnew_EventPreviewContainer_1ltOY Panel"
-        onActivate={() => { console.log('clicked') }}
+        onActivate={onActivate}
         style={{
           margin: 0,
           marginBottom: '15px'
