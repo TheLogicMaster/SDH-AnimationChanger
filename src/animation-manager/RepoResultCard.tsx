@@ -7,6 +7,7 @@ const RepoResultCard: FC<{ result: RepoResult }> = ({ result }) => {
   return (
     
     <Focusable
+    focusClassName='gpfocuswithin'
     className="Panel"
     style={{
       margin: 0,
