@@ -7,10 +7,10 @@ const RepoResultModal: FC<ModalRootProps & { result: RepoResult }> = ({ result, 
 
   return (
     <EmptyModal {...props}>
-      <video style={{width: '100%', height: 'auto'}} poster={result.thumbnail} autoPlay={true} controls={true}>
-        <source src={result.video} />
+      <video style={{width: '100%', height: 'auto'}} poster={result.preview_image} autoPlay={true} controls={true}>
+        <source src={result.preview_video} />
       </video>
-      <h1>{result.title}</h1>
+      <h1>{result.name}</h1>
     </EmptyModal>
   )
 

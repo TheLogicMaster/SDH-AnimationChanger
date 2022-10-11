@@ -2,6 +2,10 @@ import json
 import logging
 import os
 import random
+import ssl
+
+import certifi
+from aiohttp import ClientSession
 
 CONFIG_PATH = '/home/deck/.config/AnimationChanger/config.json'
 ANIMATIONS_PATH = '/home/deck/homebrew/animations'
@@ -17,7 +21,59 @@ logging.basicConfig(filename="/tmp/animation_changer.log",
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+ssl_ctx = ssl.create_default_context(cafile=certifi.where())
+
 config = {}
+
+animation_cache = []  # Todo: Use dictionary?
+
+
+async def get_steamdeckrepo():
+    try:
+        animations = []
+        page = 1
+        while True:
+            async with ClientSession() as web:
+                async with web.request(
+                        'get',
+                        f'https://steamdeckrepo.com/?sort=likes-desc&page={page}',
+                        ssl=ssl_ctx,
+                        headers={
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-Inertia': 'true',
+                            'X-Inertia-Version': 'f182274c1534a5980b2777586ce52800'
+                        }
+                ) as res:
+                    data = (await res.json())['props']['posts']['data']
+            if len(data) == 0:
+                break
+            animations += [{
+                'id': entry['id'],
+                'name': entry['title'],
+                'preview_image': entry['thumbnail'],
+                'preview_video': entry['video_preview'],
+                'author': entry['user']['steam_name'],
+                'description': entry['content'],
+                'last_changed': entry['updated_at'],  # Todo: Ensure consistent date format
+                'source': entry['url'],
+                'download_url': entry['video'],
+                'likes': entry['likes'],
+                'downloads': entry['downloads'],
+                'version': '',
+                'target': 'boot',
+                'manifest_version': 1
+            } for entry in data]
+            page += 1
+        return animations
+    except Exception as e:
+        logger.error('Failed to fetch steamdeckrepo', exc_info=e)
+        return []
+
+
+async def update_cache():
+    global animation_cache
+    animation_cache = await get_steamdeckrepo()
 
 
 def apply_animation(video, path):
@@ -83,38 +139,21 @@ TEST_CUSTOM_SETS = [
     }
 ]
 
-TEST_CACHE = [
-    {
-        "id": "0Pjon@open_your_mind",
-        "download_url": "https://steamdeckrepo.com/post/0Pjon/download",
-        "preview_image": "https://cdn.steamdeckrepo.com/thumbnails/UXr57csKFuUYcvjVuX9Iv8CDOzcsJJt9PZo184zK.png",
-        "name": f"Open Your Mind {i}",
-        "version": "1.0",
-        "author": "0Pjon",
-        "last_changed": "2022-08-23T14:25:59-06:00",
-        "target": "boot" if i % 10 > 3 else ("suspend" if i % 10 > 1 else "throbber"),
-        "source": "https://steamdeckrepo.com/post/0Pjon",
-        "manifest_version": 1,
-        "description": "Open our mind..."
-    } for i in range(50)
-]
-
-TEST_ANIMATIONS = [
-    TEST_CACHE[i] for i in range(10)
-]
-
 TEST_CUSTOM_ANIMATIONS = [
     {
-        "id": "TestCustomBoot",
+        "id": "UUID1",
+        "name": "TestCustomBoot",
         "path": "/home/deck/homebrew/animations/TestCustomBoot.webm",
-        "type": "boot"
+        "target": "boot"
     },
     {
-        "id": "TestCustomSuspend",
+        "id": "UUID2",
+        "name": "TestCustomSuspend",
         "path": "/home/deck/homebrew/animations/TestCustomSuspend.webm",
-        "type": "suspend"
+        "target": "suspend"
     }
 ]
+
 
 class Plugin:
 
@@ -132,7 +171,10 @@ class Plugin:
 
     async def getAnimations(self, anim_type):
         """ Get all animation entries of type """
-        return TEST_ANIMATIONS + TEST_CUSTOM_ANIMATIONS
+        animations = animation_cache + TEST_CUSTOM_ANIMATIONS
+        if anim_type != '':
+            animations = [anim for anim in animations if anim['target'] == anim_type]
+        return animations
 
     async def getCustomAnimations(self):
         """ Get all custom animation entries """
@@ -144,7 +186,7 @@ class Plugin:
 
     async def updateAnimationCache(self):
         """ Update backend animation cache """
-        ...
+        await update_cache()
 
     async def getCachedAnimations(self, offset, count, anim_type):
         """
@@ -153,11 +195,11 @@ class Plugin:
         :param count: Number of animation entries to fetch
         :param anim_type: Type of animation to fetch ('', 'boot', 'suspend', or 'throbber')
         """
-        return TEST_CACHE
+        return {'animations': animation_cache}
 
     async def getCachedAnimation(self, anim_id):
         """ Get a cached animation entry for id """
-        for entry in TEST_CACHE:
+        for entry in animation_cache:
             if entry["id"] == anim_id:
                 return entry
         return None
@@ -226,5 +268,7 @@ class Plugin:
             logger.info(f'Randomized to {config["name"]}')
         else:
             apply_config()
+
+        await update_cache()
 
         logger.info('Initialized')
