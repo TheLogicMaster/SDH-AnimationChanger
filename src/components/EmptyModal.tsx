@@ -1,5 +1,5 @@
 import { ModalRootProps, findModuleChild } from 'decky-frontend-lib';
-import { FC } from 'react';
+import React, { FC, CSSProperties } from 'react';
 
 const EmptyModal = findModuleChild((m) => {
     if (typeof m !== 'object') return undefined;
@@ -12,6 +12,6 @@ const EmptyModal = findModuleChild((m) => {
             return m[prop];
         }
     }
-}) as FC<ModalRootProps>;
+}) as FC<ModalRootProps & {style?: CSSProperties}>;
 
 export default EmptyModal;
