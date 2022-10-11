@@ -10,12 +10,12 @@ const RepoResultModal: FC<ModalRootProps & { result: RepoResult }> = ({ result, 
       <div style={{display: 'flex', flexDirection: 'row'}}>
         <div style={{flex: 1}}>
           <video style={{width: '100%', height: 'auto'}} poster={result.preview_image} autoPlay={true} controls={true}>
-            <source src={result.video} />
+            <source src={result.preview_video} />
           </video>
         </div>
 
         <div style={{flex: 1, paddingLeft: '15px'}}>
-          <h2>{result.title}</h2>
+          <h2>{result.name}</h2>
           <DialogButton
           onClick={() => {
             // 

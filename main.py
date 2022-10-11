@@ -42,7 +42,7 @@ async def get_steamdeckrepo():
                             'Content-Type': 'application/json',
                             'X-Requested-With': 'XMLHttpRequest',
                             'X-Inertia': 'true',
-                            'X-Inertia-Version': 'f182274c1534a5980b2777586ce52800'
+                            'X-Inertia-Version': '639230c7d92637568c3f49a3548d5818'
                         }
                 ) as res:
                     data = (await res.json())['props']['posts']['data']

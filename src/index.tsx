@@ -69,15 +69,16 @@ const Content: FC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
                     label: result.result.animations[i]
                 })
             }
-            setAnimations(newAnimations)
-            setCurrent(result.result.current)
-            setRandomize(result.result.randomize)
-        } else
-            showError(result.result)
+            setAnimations(newAnimations);
+            setCurrent(result.result.current);
+            setRandomize(result.result.randomize);
+        } else {
+            showError(result.result);
+        }
     };
 
     useEffect(() => {
-        loadConfig().then()
+        loadConfig();
     }, []);
 
     return (
