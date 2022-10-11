@@ -11,8 +11,12 @@ import {
     Tabs,
     Router
 } from "decky-frontend-lib";
+
 import { useEffect, useState, FC } from "react";
 import { FaRandom } from "react-icons/fa";
+
+import { AnimationChangerContext, AnimationChangerContextInterface } from './state';
+
 
 import {
     AnimationBrowserPage,
@@ -190,13 +194,26 @@ const AnimationManagerRouter: FC = () => {
   
 export default definePlugin((serverApi: ServerAPI) => {
 
+    const test: AnimationChangerContextInterface = {
+        name: "Test",
+        author: "Testing",
+        url: "123"
+    };
+
     serverApi.routerHook.addRoute("/animation-manager", () => (
-        <AnimationManagerRouter />
+        <AnimationChangerContext.Provider value={test}>
+            <AnimationManagerRouter />
+        </AnimationChangerContext.Provider>
     ));
 
     return {
         title: <div className={staticClasses.Title}>Animation Changer</div>,
-        content: <Content serverAPI={serverApi}/>,
+        content: (
+            <AnimationChangerContext.Provider value={test}>
+                <Content serverAPI={serverApi}/>
+            </AnimationChangerContext.Provider>
+        ),
         icon: <FaRandom/>
     };
+
 });
