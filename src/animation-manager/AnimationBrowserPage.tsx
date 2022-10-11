@@ -1,11 +1,15 @@
-import { useEffect, FC } from 'react';
+import {
+  useEffect,
+  useState,
+  FC
+} from 'react';
 
 import {
   Focusable,
   PanelSectionRow,
   Dropdown,
   showModal,
-  ConfirmModal
+  Spinner
 } from 'decky-frontend-lib';
 
 import RepoResultCard from '../components/RepoResultCard';
@@ -16,11 +20,27 @@ import { useAnimationContext } from '../state';
 export const AnimationBrowserPage: FC = () => {
   
   const { searchRepo, repoResults, searchTotal } = useAnimationContext();
+  
+  const [ loading, setLoading ] = useState(true);
+
+  const loadResults = async () => {
+    await searchRepo();
+    setLoading(false);
+  };
 
   // Runs upon opening the page
   useEffect(() => {
-    searchRepo();
+    loadResults();
   }, []);
+
+
+  if(loading) {
+    return (
+      <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%'}}>
+        <Spinner width={32} height={32} />
+      </div>
+    );
+  }
 
   return (
     <>
@@ -29,6 +49,7 @@ export const AnimationBrowserPage: FC = () => {
             {searchTotal} results found
         </PanelSectionRow>
       </Focusable>
+
       
       <Focusable style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', columnGap: '15px' }}>
 
