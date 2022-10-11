@@ -3,12 +3,12 @@ import { useAnimationContext } from '../state';
 
 export const AnimationBrowserPage: FC = () => {
   
-  const { loadSets, animationSets } = useAnimationContext();
+  const { searchRepo, repoResults, searchTotal } = useAnimationContext();
 
   // Runs upon opening the page
   useEffect(() => {
     
-    loadSets();
+    searchRepo();
     
   }, []);
 
@@ -18,13 +18,17 @@ export const AnimationBrowserPage: FC = () => {
         style={{ fontWeight: "bold", fontSize: "1.5em", marginBottom: "0px" }}
       >
         
-        {animationSets.map((set) => (
-          <div key={set.id}>
-            {set.boot}
-          </div>
-        ))}
+        TOTAL: {searchTotal}
 
       </h2>
+
+      {repoResults.map((result) => (
+          <div key={result.id}>
+            <img src={result.thumbnail} width={300} />
+            {result.title}
+            <hr />
+          </div>
+        ))}
     </div>
   );
 };
