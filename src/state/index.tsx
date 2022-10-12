@@ -33,10 +33,10 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
   const [ customSets, setCustomSets ] = useState<AnimationSet[]>([]);
   const [ settings, setSettings ] = useState<PluginSettings>({
     randomize: false,
-    current_set: undefined,
-    boot: undefined,
-    suspend: undefined,
-    throbber: undefined,
+    current_set: '',
+    boot: '',
+    suspend: '',
+    throbber: '',
   });
 
   // When the context is mounted we load the current config.
@@ -74,6 +74,11 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
     return true;
   }
 
+  const saveSettings = async (settings: PluginSettings) => {
+    await serverAPI.callPluginMethod('saveSettings', { settings });
+    loadBackendState();
+  }
+
   return (
     <AnimationContext.Provider value={{
       repoResults,
@@ -82,7 +87,9 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
       setRepoSort,
       downloadAnimation,
       downloadedAnimations,
-      settings
+      allAnimations: downloadedAnimations,
+      settings,
+      saveSettings,
     }}>
       {children}
     </AnimationContext.Provider>

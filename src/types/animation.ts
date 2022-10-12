@@ -20,10 +20,10 @@ export interface IRepoResult extends Animation  {
 
 export interface PluginSettings {
   randomize: boolean;
-  current_set?: AnimationSet;
-  boot?: Animation;
-  suspend?: Animation;
-  throbber?: Animation;
+  current_set: String;
+  boot: String;
+  suspend: String;
+  throbber: String;
 }
 
 export interface Animation {
@@ -54,8 +54,10 @@ export type AnimationContextType = {
   repoSort: RepoSort;
   setRepoSort: (arg0: RepoSort) => void;
   downloadAnimation: (id: String) => void;
+  allAnimations: Animation[];
   downloadedAnimations: IRepoResult[];
   settings: PluginSettings;
+  saveSettings: (settings: PluginSettings) => void;
 }
 
 export interface AnimationProviderType {
