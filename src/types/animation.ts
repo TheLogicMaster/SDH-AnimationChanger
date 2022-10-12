@@ -1,4 +1,3 @@
-import { ReactNode } from 'react';
 import { ServerAPI } from 'decky-frontend-lib';
 import { Moment } from 'moment';
 
@@ -52,6 +51,7 @@ export type AnimationContextType = {
   searchRepo: (reload?: boolean) => void;
   repoSort: RepoSort;
   setRepoSort: (arg0: RepoSort) => void;
+  downloadAnimation: (id: String) => void;
 }
 
 export interface AnimationProviderType {
