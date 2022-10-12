@@ -78,7 +78,7 @@ const Content: FC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
     };
 
     useEffect(() => {
-        loadConfig();
+        // loadConfig();
     }, []);
 
     return (
@@ -102,8 +102,8 @@ const Content: FC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
                     description="Select a new animation on boot-up"
                     checked={randomize}
                     onChange={async (randomize: boolean) => {
-                        await saveConfig(current, randomize)
-                        setRandomize(randomize)
+                        // await saveConfig(current, randomize)
+                        // setRandomize(randomize)
                     }}
                 />
             </PanelSectionRow>
@@ -115,8 +115,8 @@ const Content: FC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
                     rgOptions={animations}
                     selectedOption={current}
                     onChange={async (data) => {
-                        await saveConfig(data.data, randomize)
-                        setCurrent(data.data)
+                        // await saveConfig(data.data, randomize)
+                        // setCurrent(data.data)
                     }}
                 />
             </PanelSectionRow>
@@ -126,9 +126,9 @@ const Content: FC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
                     layout="below"
                     description="Randomize the current animation"
                     onClick={async () => {
-                        let newCurrent = Math.floor(Math.random() * (animations.length - 1)) + 1
-                        await saveConfig(newCurrent, randomize)
-                        setCurrent(newCurrent)
+                        // let newCurrent = Math.floor(Math.random() * (animations.length - 1)) + 1
+                        // await saveConfig(newCurrent, randomize)
+                        // setCurrent(newCurrent)
                     }}
                 >
                     Randomize
@@ -140,7 +140,7 @@ const Content: FC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
                     layout="below"
                     description="Reload configuration and animations"
                     onClick={async () => {
-                        await loadConfig()
+                        // await loadConfig()
                     }}
                 >
                     Reload

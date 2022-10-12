@@ -3,6 +3,7 @@ import logging
 import os
 import random
 import ssl
+import aiohttp
 
 import certifi
 from aiohttp import ClientSession
@@ -10,9 +11,22 @@ from aiohttp import ClientSession
 CONFIG_PATH = '/home/deck/.config/AnimationChanger/config.json'
 ANIMATIONS_PATH = '/home/deck/homebrew/animations'
 OVERRIDE_PATH = '/home/deck/.steam/root/config/uioverrides/movies'
+DOWNLOADS_PATH = '/home/deck/.config/AnimationChanger/downloads'
+
 BOOT_VIDEO = 'deck_startup.webm'
 SUSPEND_VIDEO = 'deck-suspend-animation.webm'
 THROBBER_VIDEO = 'deck-suspend-animation-from-throbber.webm'
+
+DEFAULT_CONFIG = {
+    'boot': '',
+    'suspend': '',
+    'throbber': '',
+    'randomize': '',
+    'current_set': '',
+    'downloads': [],
+    'custom_animations': [],
+    'custom_sets': [],
+}
 
 logging.basicConfig(filename="/tmp/animation_changer.log",
                     format='[Animation Changer] %(asctime)s %(levelname)s %(message)s',
@@ -24,7 +38,8 @@ logger.setLevel(logging.INFO)
 ssl_ctx = ssl.create_default_context(cafile=certifi.where())
 
 config = {}
-
+local_animations = []
+local_sets = []
 animation_cache = []  # Todo: Use dictionary?
 
 
@@ -32,6 +47,7 @@ async def get_steamdeckrepo():
     try:
         animations = []
         page = 1
+        # Todo: Get JS version
         while True:
             async with ClientSession() as web:
                 async with web.request(
@@ -68,191 +84,274 @@ async def get_steamdeckrepo():
         return animations
     except Exception as e:
         logger.error('Failed to fetch steamdeckrepo', exc_info=e)
-        return []
+        raise e
 
 
 async def update_cache():
     global animation_cache
     animation_cache = await get_steamdeckrepo()
+    # Todo: JSON URL based sources
+    # Todo: How to merge sources with less metadata with steamdeckrepo results gracefully?
 
 
-def apply_animation(video, path):
-    if path is None:
-        return
+def regenerate_downloads():
+    # Todo: Regenerate downloaded animation data
+    ...
 
+
+def load_config():
+    global config
+    config = DEFAULT_CONFIG.copy()
+
+    def save_new():
+        regenerate_downloads()
+        try:
+            save_config()
+        except Exception as ex:
+            logger.error('Failed to save new config', exc_info=ex)
+
+    if os.path.exists(CONFIG_PATH):
+        try:
+            with open(CONFIG_PATH) as f:
+                config.update(json.load(f))
+        except Exception as e:
+            logger.error('Failed to load config', exc_info=e)
+            save_new()
+    else:
+        save_new()
+
+
+def save_config():
+    try:
+        with open(CONFIG_PATH, 'w') as f:
+            json.dump(config, f, indent=4)
+    except Exception as e:
+        logger.error('Failed to save config', exc_info=e)
+        raise e
+
+
+def load_local_animations():
+    global local_animations
+    global local_sets
+
+    animations = []
+    sets = []
+    directories = next(os.walk(ANIMATIONS_PATH))[1]
+    for directory in directories:
+        is_set = False
+        config_path = f'{ANIMATIONS_PATH}/{directory}/config.json'
+        anim_config = {}
+        if os.path.exists(config_path):
+            try:
+                with open(config_path) as f:
+                    anim_config = json.load(f)
+                is_set = True
+            except Exception as e:
+                logger.error(f'Failed to parse config.json for: {directory}', exc_info=e)
+        else:
+            for video in [BOOT_VIDEO, SUSPEND_VIDEO, THROBBER_VIDEO]:
+                if os.path.exists(f'{ANIMATIONS_PATH}/{directory}/{video}'):
+                    is_set = True
+                    break
+        if not is_set:
+            continue
+
+        local_set = {
+            'id': directory,
+            'enabled': anim_config['enabled'] if 'enabled' in anim_config else True
+        }
+
+        def process_animation(default, target):
+            filename = default if target not in anim_config else anim_config[target]
+            if target not in anim_config and not os.path.exists(f'{ANIMATIONS_PATH}/{directory}/{filename}'):
+                filename = ''
+            local_set[target] = filename
+            if filename != '' and filename is not None:
+                animations.append({
+                    'id': f'{directory}/{filename}',
+                    'name': directory,
+                    'target': target
+                })
+
+        process_animation(BOOT_VIDEO, 'boot')
+        process_animation(SUSPEND_VIDEO, 'suspend')
+        process_animation(THROBBER_VIDEO, 'throbber')
+
+        sets.append(local_set)
+
+    local_animations = animations
+    local_sets = sets
+
+
+def find_cached_animation(anim_id):
+    for anim in animation_cache:
+        if anim['id'] == anim_id:
+            return anim
+    return None
+
+
+def apply_animation(video, anim_id):
     override_path = f'{OVERRIDE_PATH}/{video}'
     if os.path.exists(override_path):
         os.remove(override_path)
 
-    if config['name'] == '' or path == '':
+    if anim_id is None:
         return
 
-    target_path = f'{ANIMATIONS_PATH}/{config["name"]}/{path}'
-    if os.path.exists(target_path):
-        os.symlink(target_path, override_path)
+    path = None
+    for anim in config['downloads']:
+        if anim['id'] == anim_id:
+            path = f'{DOWNLOADS_PATH}/{anim_id}.webm'
+            break
+    else:
+        for anim in config['custom_animations']:
+            if anim['id'] == anim_id:
+                path = anim['path']
+                break
+        else:
+            for anim in local_animations:
+                if anim['id'] == anim_id:
+                    path = ANIMATIONS_PATH + '/' + anim_id
+                    break
+
+    if path is None or not os.path.exists(path):
+        raise Exception(f'Failed to find animation for: {anim_id}')
+
+    os.symlink(path, override_path)
 
 
-def apply_config():
-    animation = {
-        'themes': None,
-        'boot': BOOT_VIDEO,
-        'suspend': SUSPEND_VIDEO,
-        'throbber': THROBBER_VIDEO
-    }
-
-    path = f'{ANIMATIONS_PATH}/{config["name"]}/config.json'
-    if config["name"] != '' and os.path.exists(path):
-        with open(path) as f:
-            animation.update(json.load(f))
-
-    apply_animation(BOOT_VIDEO, animation['boot'])
-    apply_animation(SUSPEND_VIDEO, animation['suspend'])
-    apply_animation(THROBBER_VIDEO, animation['throbber'])
+def apply_animations():
+    ...  # Todo: Load animations from current config values
 
 
-TEST_SETS = [
-    {
-        "id": "TestSet1",
-        "boot": "TestSet1_boot.webm",
-        "enabled": True
-    },
-    {
-        "id": "TestSet2",
-        "boot": "TestSet2_boot.webm",
-        "suspend": "TestSet2_suspend.webm",
-        "enabled": False
-    }
-]
+def randomize_current_set():
+    ...  # Todo: Randomize current set from active sets
 
-TEST_CUSTOM_SETS = [
-    {
-        "id": "TestCustomSet1",
-        "boot": "TestCustomSet1_boot.webm",
-        "suspend": None,
-        "throbber": "",
-        "enabled": True
-    },
-    {
-        "id": "TestCustomSet2",
-        "boot": "TestCustomSet2_boot.webm",
-        "enabled": False
-    }
-]
 
-TEST_CUSTOM_ANIMATIONS = [
-    {
-        "id": "UUID1",
-        "name": "TestCustomBoot",
-        "path": "/home/deck/homebrew/animations/TestCustomBoot.webm",
-        "target": "boot"
-    },
-    {
-        "id": "UUID2",
-        "name": "TestCustomSuspend",
-        "path": "/home/deck/homebrew/animations/TestCustomSuspend.webm",
-        "target": "suspend"
-    }
-]
+def randomize_all():
+    ...  # Todo: Randomize using pool of all enabled sets
 
 
 class Plugin:
 
-    async def getSets(self):
-        """ Get all existing animation set entries """
-        return TEST_SETS + TEST_CUSTOM_SETS
+    async def getAllSets(self):
+        """ Get all available sets """
+        return {'sets': local_sets + config['custom_sets']}
+
+    async def getLocalSets(self):
+        """ Get all sets defined in animations directory """
+        return {'sets': local_sets}
 
     async def getCustomSets(self):
         """ Get all custom set entries """
-        return TEST_CUSTOM_SETS
+        return {'sets': config['custom_sets']}
 
-    async def saveCustomSet(self, name, set_entry):
-        """ Save custom set entry (None for deletion) with specified name """
+    async def saveCustomSet(self, set_entry):
+        """ Save custom set entry """
         ...
 
-    async def getAnimations(self, anim_type):
-        """ Get all animation entries of type """
-        animations = animation_cache + TEST_CUSTOM_ANIMATIONS
-        if anim_type != '':
-            animations = [anim for anim in animations if anim['target'] == anim_type]
-        return animations
+    async def removeCustomSet(self, set_id):
+        """ Remove custom set """
+        ...
+
+    async def enableSet(self, set_id, enable):
+        """ Enable or disable set """
+        ...
+
+    async def getAllAnimations(self):
+        """ Get all available animations """
+        return {'animations': local_animations + config['downloads'] + config['custom_animations']}
+
+    async def getLocalAnimations(self):
+        """ Get all animations in animations directory """
+        return {'animations': local_animations}
+
+    async def getDownloadedAnimations(self):
+        """ Get all downloaded animations """
+        return {'animations': config['downloads']}
 
     async def getCustomAnimations(self):
         """ Get all custom animation entries """
-        return TEST_CUSTOM_ANIMATIONS
+        return {'animations': config['custom_animations']}
 
-    async def saveCustomAnimation(self, name, anim_entry):
-        """ Save a custom animation entry (None for deletion) with specified name """
+    async def saveCustomAnimation(self, anim_entry):
+        """ Save a custom animation entry """
+        ...
+
+    async def removeCustomAnimation(self, anim_id):
+        """ Removes custom animation with name """
         ...
 
     async def updateAnimationCache(self):
         """ Update backend animation cache """
         await update_cache()
 
-    async def getCachedAnimations(self, offset, count, anim_type):
+    async def getCachedAnimations(self):
         """
-        Get a page of animation entries
-        :param offset: Animation entry start index
-        :param count: Number of animation entries to fetch
-        :param anim_type: Type of animation to fetch ('', 'boot', 'suspend', or 'throbber')
+        Get cached repository animations
         """
         return {'animations': animation_cache}
 
     async def getCachedAnimation(self, anim_id):
         """ Get a cached animation entry for id """
-        for entry in animation_cache:
-            if entry["id"] == anim_id:
-                return entry
-        return None
+        return find_cached_animation(anim_id)
 
     async def downloadAnimation(self, anim_id):
         """ Download a cached animation for id """
-        ...
+        for entry in config['downloads']:
+            if entry['id'] == anim_id:
+                return
+        async with aiohttp.ClientSession() as web:
+            if (anim := find_cached_animation(anim_id)) is None:
+                raise Exception(f'Failed to find cached animation with id: {id}')
+            async with web.get(anim['download_url'], ssl=ssl_ctx) as response:
+                if response.status != 200:
+                    raise Exception(f'Invalid download request status: {response.status}')
+                data = await response.read()
+        with open(f'{DOWNLOADS_PATH}/{anim_id}.webm', 'wb') as f:
+            f.write(data)
+        config['downloads'].append(anim)
+        save_config()
 
     async def deleteAnimation(self, anim_id):
         """ Delete a downloaded animation """
-        ...
+        config['downloads'] = [entry for entry in config['downloads'] if entry['id'] != anim_id]
+        save_config()
+        os.remove(f'{DOWNLOADS_PATH}/{anim_id}.webm')
 
-    async def loadConfig(self):
-        global config
-        config = {'randomize': False, 'name': ''}
+    async def getSettings(self):
+        """ Get config settings """
+        return {
+            'randomize': config['randomize'],
+            'current_set': config['current_set'],
+            'boot': config['boot'],
+            'suspend': config['suspend'],
+            'throbber': config['throbber']
+        }
 
-        if os.path.exists(CONFIG_PATH):
-            with open(CONFIG_PATH) as f:
-                config.update(json.load(f))
-            logger.info(f'Loaded: {config}')
-        else:
-            logger.info('Using default config')
+    async def saveSettings(self, settings):
+        """ Save settings to config file """
+        config.update(settings)
+        save_config()
+        apply_animations()
 
-        config['animations'] = next(os.walk(ANIMATIONS_PATH))[1]
-        logger.info(f'Found: {config["animations"]}')
+    async def reloadConfiguration(self):
+        """ Reload config file and local animations from disk """
+        load_config()
+        load_local_animations()
+        apply_animations()
 
-        config['current'] = 0
-        for i in range(len(config['animations'])):
-            if config['animations'][i] == config['name']:
-                config['current'] = i + 1
-                break
-        else:
-            config['name'] = ''
+    async def randomizeSet(self):
+        """ Randomize the currently selected set """
+        randomize_current_set()
+        save_config()
+        apply_animations()
 
-        return config
-
-    async def saveConfig(self, current, randomize):
-        if current > len(config['animations']):
-            current = 0
-        config['current'] = current
-        config['name'] = config['animations'][current - 1] if current > 0 else ''
-        config['randomize'] = randomize
-
-        data = config.copy()
-        del data['animations']
-        del data['current']
-
-        logger.info(f'Saving: {data}')
-
-        with open(CONFIG_PATH, "w") as f:
-            json.dump(data, f, indent=4)
-
-        apply_config()
+    async def randomizeAll(self):
+        """ Randomize using pool of all enabled set animations """
+        randomize_all()
+        save_config()
+        apply_animations()
 
     async def _main(self):
         logger.info('Initializing...')
@@ -260,15 +359,19 @@ class Plugin:
         os.makedirs(ANIMATIONS_PATH, exist_ok=True)
         os.makedirs(OVERRIDE_PATH, exist_ok=True)
         os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
+        os.makedirs(DOWNLOADS_PATH, exist_ok=True)
 
-        await self.loadConfig(self)
-        if config['randomize'] and len(config['animations']) > 0:
-            current = random.randint(1, len(config['animations']))
-            await self.saveConfig(self, current, config['randomize'])
-            logger.info(f'Randomized to {config["name"]}')
-        else:
-            apply_config()
+        load_config()
+        load_local_animations()
+        if config['randomize'] == 'set':
+            randomize_current_set()
+        elif config['randomize'] == 'all':
+            randomize_all()
+        apply_animations()
 
-        await update_cache()
+        try:
+            await update_cache()
+        except:
+            ...
 
         logger.info('Initialized')
