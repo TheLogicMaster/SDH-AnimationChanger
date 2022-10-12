@@ -28,7 +28,6 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
   const [ animations, setAnimations ] = useState<Animation[]>([]);
   const [ animationSets, setAnimationSets ] = useState<AnimationSet[]>([]);
   
-
   /**
    * Load the sets from the server API.
    */
@@ -41,17 +40,25 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
   
   const searchRepo = async (reload: Boolean = false) => {
 
-    let data = await serverAPI.callPluginMethod<{}, {}>('getCachedAnimations', {offset: 0, count: 200, anim_type: ''});
+    let data = await serverAPI.callPluginMethod('getCachedAnimations', {});
   
     // @ts-ignore
     if(reload || !data.result || data.result.animations.length === 0) {
-      await serverAPI.callPluginMethod<{}, {}>('updateAnimationCache', {});
-      data = await serverAPI.callPluginMethod<{}, {}>('getCachedAnimations', {offset: 0, count: 200, anim_type: ''});
+      await serverAPI.callPluginMethod('updateAnimationCache', {});
+      data = await serverAPI.callPluginMethod('getCachedAnimations', {});
     }
 
     // @ts-ignore
     setRepoResults(data.result.animations.map((json) => new RepoResult(json)));
 
+  }
+
+  const downloadAnimation = async (id: String) => {
+
+    const response = await serverAPI.callPluginMethod('downloadAnimation', { anim_id: id });
+    console.log(response);
+
+    return true;
   }
 
   return (
@@ -62,7 +69,8 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
       repoResults,
       searchRepo,
       repoSort,
-      setRepoSort
+      setRepoSort,
+      downloadAnimation
     }}>
       {children}
     </AnimationContext.Provider>
