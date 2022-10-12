@@ -362,15 +362,12 @@ class Plugin:
         load_local_animations()
         apply_animations()
 
-    async def randomizeSet(self):
-        """ Randomize the currently selected set """
-        randomize_current_set()
-        save_config()
-        apply_animations()
-
-    async def randomizeAll(self):
-        """ Randomize using pool of all enabled set animations """
-        randomize_all()
+    async def randomize(self, shuffle):
+        """ Randomize animations in active sets """
+        if shuffle:
+            randomize_all()
+        else:
+            randomize_current_set()
         save_config()
         apply_animations()
 
