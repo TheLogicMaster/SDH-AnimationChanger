@@ -246,6 +246,7 @@ def randomize_current_set():
     new_set = {'boot': '', 'suspend': '', 'throbber': ''}
     if len(active) > 0:
         new_set = active[random.randint(0, len(active) - 1)]
+        config['current_set'] = new_set['id']
     for i in range(3):
         config[VIDEO_TYPES[i]] = new_set[VIDEO_TYPES[i]]
 
@@ -256,6 +257,7 @@ def randomize_all():
         pool = [entry[VIDEO_TYPES[i]] for entry in active if entry[VIDEO_TYPES[i]] and entry[VIDEO_TYPES[i]] != '']
         if len(pool) > 0:
             config[VIDEO_TYPES[i]] = pool[random.randint(0, len(pool) - 1)]
+    config['current_set'] = ''
 
 
 class Plugin:
