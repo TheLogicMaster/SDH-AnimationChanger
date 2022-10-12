@@ -119,6 +119,8 @@ async def load_config():
         try:
             with open(CONFIG_PATH) as f:
                 config.update(json.load(f))
+                if type(config['randomize']) == bool:
+                    config['randomize'] = ''
         except Exception as e:
             logger.error('Failed to load config', exc_info=e)
             await save_new()
