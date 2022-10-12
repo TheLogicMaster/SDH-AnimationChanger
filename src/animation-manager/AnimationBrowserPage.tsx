@@ -3,7 +3,8 @@ import {
   useState,
   FC,
   FormEvent,
-  useRef
+  useRef,
+  useReducer
 } from 'react';
 
 import {
@@ -31,6 +32,7 @@ export const AnimationBrowserPage: FC = () => {
   const [ query, setQuery ] = useState<string>('');
   const [ loading, setLoading ] = useState(repoResults.length === 0);
   const [ filteredResults, setFilteredResults ] = useState(repoResults);
+  const [ ignored, forceUpdate ] = useReducer(x => x + 1, 0);
   const searchField = useRef<any>();
 
   const loadResults = async () => {
@@ -58,7 +60,7 @@ export const AnimationBrowserPage: FC = () => {
   }, []);
 
   useEffect(() => {
-    
+  
     if(!repoResults || loading) return;
 
     let filtered = repoResults;
@@ -94,6 +96,7 @@ export const AnimationBrowserPage: FC = () => {
     }
 
     setFilteredResults(filtered);
+    forceUpdate();
     
   }, [query, loading, repoSort]);
 
@@ -170,8 +173,8 @@ export const AnimationBrowserPage: FC = () => {
       
       <Focusable style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gridAutoRows: '1fr', columnGap: '15px' }}>
 
-        {filteredResults.map((result) => <RepoResultCard
-        key={result.id}
+        {filteredResults.map((result, index) => <RepoResultCard
+        key={`${result.id}-${index}`}
         result={result}
         onActivate={() => {
           showModal(<RepoResultModal result={result} />);
