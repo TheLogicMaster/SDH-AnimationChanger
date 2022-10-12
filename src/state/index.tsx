@@ -12,7 +12,7 @@ import {
   AnimationProviderType,
   Animation,
   AnimationSet,
-  RepoResult,
+  RepoResult
 } from '../types/animation';
 
 const AnimationContext = createContext<AnimationContextType | null>(null);
@@ -36,32 +36,17 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
     }
   };
 
-  const searchRepo = async (sort?: string, query?: string, page?: number) => {
+  
+  const searchRepo = async (reload: Boolean = false) => {
 
     // TODO: make sort an enum
     // TODO: pull query through
     // TODO: setup pagination
 
-    // const response = await serverAPI.fetchNoCors<{ body: string }>('https://steamdeckrepo.com/?sort=likes-desc', {
-    //   method: 'GET',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     'X-Requested-With': 'XMLHttpRequest',
-    //     'X-Inertia': 'true',
-    //     'X-Inertia-Version': 'f182274c1534a5980b2777586ce52800'
-    //   }
-    // });
-    //
-    // if(response.success) {
-    //   const data = JSON.parse(response.result.body);
-    //   setRepoResults(data.props.posts.data);
-    //   setSearchTotal(data.props.posts.meta.total);
-    // }
-
     let data = await serverAPI.callPluginMethod<{}, {}>('getCachedAnimations', {offset: 0, count: 200, anim_type: ''});
-    
+  
     // @ts-ignore
-    if(data.result.animations.length === 0) {
+    if(reload || !data.result || data.result.animations.length === 0) {
       await serverAPI.callPluginMethod<{}, {}>('updateAnimationCache', {});
       data = await serverAPI.callPluginMethod<{}, {}>('getCachedAnimations', {offset: 0, count: 200, anim_type: ''});
     }

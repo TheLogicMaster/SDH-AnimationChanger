@@ -39,7 +39,7 @@ export type AnimationContextType = {
   searchTotal: number;
   page: number;
   loadSets: () => void;
-  searchRepo: (sort?: string, query?: string, page?: number) => void;
+  searchRepo: (reload: boolean = false) => void;
 }
 
 export interface AnimationProviderType extends ReactNode {
