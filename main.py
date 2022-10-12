@@ -4,7 +4,6 @@ import os
 import random
 import ssl
 import aiohttp
-
 import certifi
 from aiohttp import ClientSession
 
@@ -16,6 +15,7 @@ DOWNLOADS_PATH = '/home/deck/.config/AnimationChanger/downloads'
 BOOT_VIDEO = 'deck_startup.webm'
 SUSPEND_VIDEO = 'deck-suspend-animation.webm'
 THROBBER_VIDEO = 'deck-suspend-animation-from-throbber.webm'
+
 VIDEOS_NAMES = [BOOT_VIDEO, SUSPEND_VIDEO, THROBBER_VIDEO]
 VIDEO_TYPES = ['boot', 'suspend', 'throbber']
 
@@ -78,12 +78,24 @@ async def update_cache():
     # Todo: How to merge sources with less metadata with steamdeckrepo results gracefully?
 
 
-def regenerate_downloads():
-    # Todo: Regenerate downloaded animation data
-    ...
+async def regenerate_downloads():
+    downloads = []
+    if len(animation_cache) == 0:
+        await update_cache()
+    for file in os.listdir():
+        if not file.endswith('.webm'):
+            continue
+        anim_id = file[:-5]
+        for anim in animation_cache:
+            if anim['id'] == anim_id:
+                downloads.append(anim)
+                break
+        else:
+            logger.error(f'Failed to find cached entry for id: {anim_id}')
+    config['downloads'] = downloads
 
 
-def load_config():
+async def load_config():
     global config
     config = {
         'boot': '',
@@ -96,9 +108,9 @@ def load_config():
         'custom_sets': [],
     }
 
-    def save_new():
-        regenerate_downloads()
+    async def save_new():
         try:
+            await regenerate_downloads()
             save_config()
         except Exception as ex:
             logger.error('Failed to save new config', exc_info=ex)
@@ -109,9 +121,9 @@ def load_config():
                 config.update(json.load(f))
         except Exception as e:
             logger.error('Failed to load config', exc_info=e)
-            save_new()
+            await save_new()
     else:
-        save_new()
+        await save_new()
 
 
 def save_config():
@@ -225,8 +237,17 @@ def remove_custom_set(set_id):
     config['custom_sets'] = [entry for entry in config['custom_sets'] if entry['id'] != set_id]
 
 
+def remove_custom_animation(anim_id):
+    config['custom_animations'] = [anim for anim in config['custom_animations'] if anim['id'] != anim_id]
+
+
 def randomize_current_set():
     active = get_active_sets()
+    new_set = {'boot': '', 'suspend': '', 'throbber': ''}
+    if len(active) > 0:
+        new_set = active[random.randint(0, len(active) - 1)]
+    for i in range(3):
+        config[VIDEO_TYPES[i]] = new_set[VIDEO_TYPES[i]]
 
 
 def randomize_all():
@@ -260,10 +281,12 @@ class Plugin:
         """ Save custom set entry """
         remove_custom_set(set_entry['id'])
         config['custom_sets'].append(set_entry)
+        save_config()
 
     async def removeCustomSet(self, set_id):
         """ Remove custom set """
         remove_custom_set(set_id)
+        save_config()
 
     async def enableSet(self, set_id, enable):
         """ Enable or disable set """
@@ -276,24 +299,26 @@ class Plugin:
         for entry in config['custom_sets']:
             if entry['id'] == set_id:
                 entry['enable'] = enable
+                save_config()
                 break
 
     async def saveCustomAnimation(self, anim_entry):
         """ Save a custom animation entry """
-        ...
+        remove_custom_animation(anim_entry['id'])
+        config['custom_animations'].append(anim_entry)
+        save_config()
 
     async def removeCustomAnimation(self, anim_id):
         """ Removes custom animation with name """
-        ...
+        remove_custom_animation(anim_id)
+        save_config()
 
     async def updateAnimationCache(self):
         """ Update backend animation cache """
         await update_cache()
 
     async def getCachedAnimations(self):
-        """
-        Get cached repository animations
-        """
+        """ Get cached repository animations """
         return {'animations': animation_cache}
 
     async def getCachedAnimation(self, anim_id):
@@ -323,16 +348,6 @@ class Plugin:
         save_config()
         os.remove(f'{DOWNLOADS_PATH}/{anim_id}.webm')
 
-    async def getSettings(self):
-        """ Get config settings """
-        return {
-            'randomize': config['randomize'],
-            'current_set': config['current_set'],
-            'boot': config['boot'],
-            'suspend': config['suspend'],
-            'throbber': config['throbber']
-        }
-
     async def saveSettings(self, settings):
         """ Save settings to config file """
         config.update(settings)
@@ -341,7 +356,7 @@ class Plugin:
 
     async def reloadConfiguration(self):
         """ Reload config file and local animations from disk """
-        load_config()
+        await load_config()
         load_local_animations()
         apply_animations()
 
@@ -365,7 +380,7 @@ class Plugin:
         os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
         os.makedirs(DOWNLOADS_PATH, exist_ok=True)
 
-        load_config()
+        await load_config()
         load_local_animations()
         if config['randomize'] == 'set':
             randomize_current_set()
