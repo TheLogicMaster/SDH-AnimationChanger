@@ -16,6 +16,8 @@ DOWNLOADS_PATH = '/home/deck/.config/AnimationChanger/downloads'
 BOOT_VIDEO = 'deck_startup.webm'
 SUSPEND_VIDEO = 'deck-suspend-animation.webm'
 THROBBER_VIDEO = 'deck-suspend-animation-from-throbber.webm'
+VIDEOS_NAMES = [BOOT_VIDEO, SUSPEND_VIDEO, THROBBER_VIDEO]
+VIDEO_TYPES = ['boot', 'suspend', 'throbber']
 
 logging.basicConfig(filename="/tmp/animation_changer.log",
                     format='[Animation Changer] %(asctime)s %(levelname)s %(message)s',
@@ -29,7 +31,7 @@ ssl_ctx = ssl.create_default_context(cafile=certifi.where())
 config = {}
 local_animations = []
 local_sets = []
-animation_cache = []  # Todo: Use dictionary?
+animation_cache = []
 
 
 async def get_steamdeckrepo():
@@ -164,9 +166,8 @@ def load_local_animations():
                     'target': target
                 })
 
-        process_animation(BOOT_VIDEO, 'boot')
-        process_animation(SUSPEND_VIDEO, 'suspend')
-        process_animation(THROBBER_VIDEO, 'throbber')
+        for i in range(3):
+            process_animation(VIDEOS_NAMES[i], VIDEO_TYPES[i])
 
         sets.append(local_set)
 
@@ -212,60 +213,70 @@ def apply_animation(video, anim_id):
 
 
 def apply_animations():
-    apply_animation(BOOT_VIDEO, config['boot'])
-    apply_animation(SUSPEND_VIDEO, config['suspend'])
-    apply_animation(THROBBER_VIDEO, config['throbber'])
+    for i in range(3):
+        apply_animation(VIDEOS_NAMES[i], config[VIDEO_TYPES[i]])
+
+
+def get_active_sets():
+    return [entry for entry in local_sets + config['custom_sets'] if entry['enabled']]
+
+
+def remove_custom_set(set_id):
+    config['custom_sets'] = [entry for entry in config['custom_sets'] if entry['id'] != set_id]
 
 
 def randomize_current_set():
-    ...  # Todo: Randomize current set from active sets
+    active = get_active_sets()
 
 
 def randomize_all():
-    ...  # Todo: Randomize using pool of all enabled sets
+    active = get_active_sets()
+    for i in range(3):
+        pool = [entry[VIDEO_TYPES[i]] for entry in active if entry[VIDEO_TYPES[i]] and entry[VIDEO_TYPES[i]] != '']
+        if len(pool) > 0:
+            config[VIDEO_TYPES[i]] = pool[random.randint(0, len(pool) - 1)]
 
 
 class Plugin:
 
-    async def getAllSets(self):
-        """ Get all available sets """
-        return {'sets': local_sets + config['custom_sets']}
-
-    async def getLocalSets(self):
-        """ Get all sets defined in animations directory """
-        return {'sets': local_sets}
-
-    async def getCustomSets(self):
-        """ Get all custom set entries """
-        return {'sets': config['custom_sets']}
+    async def getState(self):
+        """ Get backend state (animations, sets, and settings) """
+        return {
+            'local_animations': local_animations,
+            'custom_animations': config['custom_animations'],
+            'downloaded_animations': config['downloads'],
+            'local_sets': local_sets,
+            'custom_sets': config['custom_sets'],
+            'settings': {
+                'randomize': config['randomize'],
+                'current_set': config['current_set'],
+                'boot': config['boot'],
+                'suspend': config['suspend'],
+                'throbber': config['throbber']
+            }
+        }
 
     async def saveCustomSet(self, set_entry):
         """ Save custom set entry """
-        ...
+        remove_custom_set(set_entry['id'])
+        config['custom_sets'].append(set_entry)
 
     async def removeCustomSet(self, set_id):
         """ Remove custom set """
-        ...
+        remove_custom_set(set_id)
 
     async def enableSet(self, set_id, enable):
         """ Enable or disable set """
-        ...
-
-    async def getAllAnimations(self):
-        """ Get all available animations """
-        return {'animations': local_animations + config['downloads'] + config['custom_animations']}
-
-    async def getLocalAnimations(self):
-        """ Get all animations in animations directory """
-        return {'animations': local_animations}
-
-    async def getDownloadedAnimations(self):
-        """ Get all downloaded animations """
-        return {'animations': config['downloads']}
-
-    async def getCustomAnimations(self):
-        """ Get all custom animation entries """
-        return {'animations': config['custom_animations']}
+        for entry in local_sets:
+            if entry['id'] == set_id:
+                entry['enable'] = enable
+                with open(f'{ANIMATIONS_PATH}/{entry["name"]}/config.json', 'w') as f:
+                    json.dump(entry, f)
+                return
+        for entry in config['custom_sets']:
+            if entry['id'] == set_id:
+                entry['enable'] = enable
+                break
 
     async def saveCustomAnimation(self, anim_entry):
         """ Save a custom animation entry """
