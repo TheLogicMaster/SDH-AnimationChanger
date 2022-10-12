@@ -64,7 +64,7 @@ const Content: FC = () => {
                 label="Boot Animation"
                 menuLabel="Boot Animation"
                 rgOptions={animationOptions()}
-                selectedOption=''
+                selectedOption={settings.boot}
                 onChange={({ data }) => {
                     saveSettings({ ...settings, boot: data });
                 }}/>

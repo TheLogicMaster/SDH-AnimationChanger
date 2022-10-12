@@ -19,7 +19,7 @@ export interface IRepoResult extends Animation  {
 }
 
 export interface PluginSettings {
-  randomize: boolean;
+  randomize: String;
   current_set: String;
   boot: String;
   suspend: String;

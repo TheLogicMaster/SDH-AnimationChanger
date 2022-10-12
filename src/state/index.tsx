@@ -32,7 +32,7 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
   const [ localSets, setLocalSets ] = useState<AnimationSet[]>([]);
   const [ customSets, setCustomSets ] = useState<AnimationSet[]>([]);
   const [ settings, setSettings ] = useState<PluginSettings>({
-    randomize: false,
+    randomize: '',
     current_set: '',
     boot: '',
     suspend: '',
