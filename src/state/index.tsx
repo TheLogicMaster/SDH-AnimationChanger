@@ -12,19 +12,22 @@ import {
   AnimationProviderType,
   Animation,
   AnimationSet,
-  RepoResult,
+  IRepoResult,
+  RepoSort
 } from '../types/animation';
+
+import RepoResult from '../models/RepoResult';
 
 const AnimationContext = createContext<AnimationContextType | null>(null);
 
 export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, children }) => {
 
-  const [ page, setPage ] = useState(0);
-  const [ searchTotal, setSearchTotal ] = useState(0);
-  const [ repoResults, setRepoResults ] = useState<RepoResult[]>([]);
+  const [ repoSort, setRepoSort ] = useState<RepoSort>(RepoSort.Newest);
+  const [ repoResults, setRepoResults ] = useState<IRepoResult[]>([]);
 
   const [ animations, setAnimations ] = useState<Animation[]>([]);
   const [ animationSets, setAnimationSets ] = useState<AnimationSet[]>([]);
+  
 
   /**
    * Load the sets from the server API.
@@ -35,41 +38,19 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
       setAnimationSets(response.result as AnimationSet[]);
     }
   };
-
-  const searchRepo = async (sort?: string, query?: string, page?: number) => {
-
-    // TODO: make sort an enum
-    // TODO: pull query through
-    // TODO: setup pagination
-
-    // const response = await serverAPI.fetchNoCors<{ body: string }>('https://steamdeckrepo.com/?sort=likes-desc', {
-    //   method: 'GET',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     'X-Requested-With': 'XMLHttpRequest',
-    //     'X-Inertia': 'true',
-    //     'X-Inertia-Version': 'f182274c1534a5980b2777586ce52800'
-    //   }
-    // });
-    //
-    // if(response.success) {
-    //   const data = JSON.parse(response.result.body);
-    //   setRepoResults(data.props.posts.data);
-    //   setSearchTotal(data.props.posts.meta.total);
-    // }
+  
+  const searchRepo = async (reload: Boolean = false) => {
 
     let data = await serverAPI.callPluginMethod<{}, {}>('getCachedAnimations', {offset: 0, count: 200, anim_type: ''});
-    
+  
     // @ts-ignore
-    if(data.result.animations.length === 0) {
+    if(reload || !data.result || data.result.animations.length === 0) {
       await serverAPI.callPluginMethod<{}, {}>('updateAnimationCache', {});
       data = await serverAPI.callPluginMethod<{}, {}>('getCachedAnimations', {offset: 0, count: 200, anim_type: ''});
     }
 
     // @ts-ignore
-    setRepoResults(data.result.animations);
-    // @ts-ignore
-    setSearchTotal(data.result.animations.length);
+    setRepoResults(data.result.animations.map((json) => new RepoResult(json)));
 
   }
 
@@ -78,10 +59,10 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
       animations,
       animationSets,
       loadSets,
-      page,
-      searchTotal,
       repoResults,
-      searchRepo
+      searchRepo,
+      repoSort,
+      setRepoSort
     }}>
       {children}
     </AnimationContext.Provider>

@@ -17,6 +17,7 @@
     "strict": true,
     "suppressImplicitAnyIndexErrors": true,
     "allowSyntheticDefaultImports": true,
+    "strictPropertyInitialization":false,
     "skipLibCheck": true
   },
   "include": ["src"],

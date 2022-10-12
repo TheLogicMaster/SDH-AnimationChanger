@@ -41,6 +41,7 @@
   },
   "dependencies": {
     "decky-frontend-lib": "3.5.2",
+    "moment": "^2.29.4",
     "react-icons": "^4.4.0"
   },
   "pnpm": {

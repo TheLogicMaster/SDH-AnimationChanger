@@ -1,7 +1,7 @@
 import { FC } from 'react';
-import { RepoResult } from '../types/animation';
 import { Focusable, ModalRootProps, DialogButton, FocusRing } from 'decky-frontend-lib';
 import EmptyModal from "./EmptyModal";
+import RepoResult from '../models/RepoResult';
 
 const RepoResultModal: FC<ModalRootProps & { result: RepoResult }> = ({ result, ...props }) => {
 
@@ -14,14 +14,19 @@ const RepoResultModal: FC<ModalRootProps & { result: RepoResult }> = ({ result, 
           </video>
         </div>
 
-        <div style={{flex: 1, paddingLeft: '15px'}}>
-          <h2>{result.name}</h2>
+        <div style={{display: 'flex', flex: 1, flexDirection: 'column', paddingLeft: '15px'}}>
+          <div style={{flex: 1}}>
+            <h3 style={{margin: 0}}>{result.name}</h3>
+            <p>Uploaded by {result.author}</p>
+          </div>
+          
           <DialogButton
+          disabled={result.downloaded}
           onClick={() => {
             // 
           }}
           >
-            Download Animation
+            {(result.downloaded) ? 'Downloaded' : 'Download Animation'}
           </DialogButton>
         </div>
       </div>
