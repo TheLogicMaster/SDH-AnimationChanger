@@ -1,6 +1,7 @@
 import { FC } from 'react';
 import { Focusable } from 'decky-frontend-lib';
 import { IRepoResult } from '../types/animation';
+import { FaDownload, FaThumbsUp } from "react-icons/fa";
 
 const RepoResultCard: FC<{ result: IRepoResult, onActivate: () => void }> = ({ result, onActivate }) => {
 
@@ -33,13 +34,16 @@ const RepoResultCard: FC<{ result: IRepoResult, onActivate: () => void }> = ({ r
           <div className="gamepadhomewhatsnew_EventImageWrapper_XLJ9p">
             <img
               src={result.preview_image}
-              style={{ maxWidth: '100%', height: 'auto', width: 'auto' }}
+              style={{ width: '100%', height: '160px', objectFit: 'cover' }}
               className="gamepadhomewhatsnew_EventImage_116GS"/>
             <div className="gamepadhomewhatsnew_Darkener_1n_1X"></div>
             <div
             className="gamepadhomewhatsnew_EventSummary_UE_Ms"
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               
+              <FaDownload style={{marginRight: '5px'}} /> {result.downloads}
+              <FaThumbsUp style={{marginLeft: '10px', marginRight: '5px'}} /> {result.likes}
+
             </div>
           </div>
 
