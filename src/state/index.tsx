@@ -58,8 +58,14 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
     //   setSearchTotal(data.props.posts.meta.total);
     // }
 
-    await serverAPI.callPluginMethod<{}, {}>('updateAnimationCache', {});
-    const data = await serverAPI.callPluginMethod<{}, {}>('getCachedAnimations', {offset: 0, count: 200, anim_type: ''});
+    let data = await serverAPI.callPluginMethod<{}, {}>('getCachedAnimations', {offset: 0, count: 200, anim_type: ''});
+    
+    // @ts-ignore
+    if(data.result.animations.length === 0) {
+      await serverAPI.callPluginMethod<{}, {}>('updateAnimationCache', {});
+      data = await serverAPI.callPluginMethod<{}, {}>('getCachedAnimations', {offset: 0, count: 200, anim_type: ''});
+    }
+
     // @ts-ignore
     setRepoResults(data.result.animations);
     // @ts-ignore
