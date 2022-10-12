@@ -119,6 +119,8 @@ async def load_config():
         try:
             with open(CONFIG_PATH) as f:
                 config.update(json.load(f))
+                if type(config['randomize']) == bool:
+                    config['randomize'] = ''
         except Exception as e:
             logger.error('Failed to load config', exc_info=e)
             await save_new()
@@ -246,6 +248,7 @@ def randomize_current_set():
     new_set = {'boot': '', 'suspend': '', 'throbber': ''}
     if len(active) > 0:
         new_set = active[random.randint(0, len(active) - 1)]
+        config['current_set'] = new_set['id']
     for i in range(3):
         config[VIDEO_TYPES[i]] = new_set[VIDEO_TYPES[i]]
 
@@ -256,6 +259,7 @@ def randomize_all():
         pool = [entry[VIDEO_TYPES[i]] for entry in active if entry[VIDEO_TYPES[i]] and entry[VIDEO_TYPES[i]] != '']
         if len(pool) > 0:
             config[VIDEO_TYPES[i]] = pool[random.randint(0, len(pool) - 1)]
+    config['current_set'] = ''
 
 
 class Plugin:
@@ -360,15 +364,12 @@ class Plugin:
         load_local_animations()
         apply_animations()
 
-    async def randomizeSet(self):
-        """ Randomize the currently selected set """
-        randomize_current_set()
-        save_config()
-        apply_animations()
-
-    async def randomizeAll(self):
-        """ Randomize using pool of all enabled set animations """
-        randomize_all()
+    async def randomize(self, shuffle):
+        """ Randomize animations in active sets """
+        if shuffle:
+            randomize_all()
+        else:
+            randomize_current_set()
         save_config()
         apply_animations()
 
