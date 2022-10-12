@@ -12,7 +12,8 @@ import {
   AnimationProviderType,
   Animation,
   AnimationSet,
-  IRepoResult
+  IRepoResult,
+  RepoSort
 } from '../types/animation';
 
 import RepoResult from '../models/RepoResult';
@@ -21,12 +22,12 @@ const AnimationContext = createContext<AnimationContextType | null>(null);
 
 export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, children }) => {
 
-  const [ page, setPage ] = useState(0);
-  const [ searchTotal, setSearchTotal ] = useState(0);
+  const [ repoSort, setRepoSort ] = useState<RepoSort>(RepoSort.Newest);
   const [ repoResults, setRepoResults ] = useState<IRepoResult[]>([]);
 
   const [ animations, setAnimations ] = useState<Animation[]>([]);
   const [ animationSets, setAnimationSets ] = useState<AnimationSet[]>([]);
+  
 
   /**
    * Load the sets from the server API.
@@ -37,7 +38,6 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
       setAnimationSets(response.result as AnimationSet[]);
     }
   };
-
   
   const searchRepo = async (reload: Boolean = false) => {
 
@@ -51,8 +51,6 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
 
     // @ts-ignore
     setRepoResults(data.result.animations.map((json) => new RepoResult(json)));
-    // @ts-ignore
-    setSearchTotal(data.result.animations.length);
 
   }
 
@@ -61,10 +59,10 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
       animations,
       animationSets,
       loadSets,
-      page,
-      searchTotal,
       repoResults,
-      searchRepo
+      searchRepo,
+      repoSort,
+      setRepoSort
     }}>
       {children}
     </AnimationContext.Provider>

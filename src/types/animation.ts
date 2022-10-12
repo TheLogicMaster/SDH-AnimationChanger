@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { ServerAPI } from 'decky-frontend-lib';
+import { Moment } from 'moment';
 
 export interface IRepoResult {
   id: string;
@@ -16,6 +17,7 @@ export interface IRepoResult {
   version: string;
   target: string;
   manifest_version: number;
+  moment_date: Moment;
   readonly relative_date: string;
   readonly downloaded: boolean;
 }
@@ -34,16 +36,24 @@ export interface AnimationSet {
   enabled: boolean;
 }
 
+export enum RepoSort {
+  Alpha,
+  Likes,
+  Downloads,
+  Newest,
+  Oldest
+}
+
 export type AnimationContextType = {
   animations: Animation[];
   animationSets: AnimationSet[];
   repoResults: IRepoResult[];
-  searchTotal: number;
-  page: number;
   loadSets: () => void;
-  searchRepo: (reload: boolean = false) => void;
+  searchRepo: (reload?: boolean) => void;
+  repoSort: RepoSort;
+  setRepoSort: (arg0: RepoSort) => void;
 }
 
-export interface AnimationProviderType extends ReactNode {
-  serverAPI: ServerAPI
+export interface AnimationProviderType {
+  serverAPI: ServerAPI;
 }

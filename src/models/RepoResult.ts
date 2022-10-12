@@ -1,4 +1,4 @@
-import moment from "moment";
+import moment, { Moment } from "moment";
 import { IRepoResult } from "../types/animation";
 
 export default class RepoResult implements IRepoResult {
@@ -31,8 +31,10 @@ export default class RepoResult implements IRepoResult {
 
   public manifest_version: number;
 
+  public moment_date: Moment;
+
   get relative_date(): string {
-    return moment(this.last_changed).fromNow();
+    return this.moment_date.fromNow();
   }
 
   get downloaded(): boolean {
@@ -41,6 +43,7 @@ export default class RepoResult implements IRepoResult {
 
   constructor(json: any) {
     Object.assign(this, json);
+    this.moment_date = moment(this.last_changed);
   }
 
 }

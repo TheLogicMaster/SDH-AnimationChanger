@@ -10,6 +10,7 @@ import {
   Focusable,
   PanelSectionRow,
   Dropdown,
+  DropdownOption,
   showModal,
   Spinner,
   TextField,
@@ -19,11 +20,13 @@ import {
 import RepoResultCard from '../components/RepoResultCard';
 import RepoResultModal from '../components/RepoResultModal';
 
+import { RepoSort } from '../types/animation';
+
 import { useAnimationContext } from '../state';
 
 export const AnimationBrowserPage: FC = () => {
   
-  const { searchRepo, repoResults, searchTotal } = useAnimationContext();
+  const { searchRepo, repoResults, repoSort, setRepoSort } = useAnimationContext();
   
   const [ query, setQuery ] = useState<string>('');
   const [ loading, setLoading ] = useState(repoResults.length === 0);
@@ -60,15 +63,62 @@ export const AnimationBrowserPage: FC = () => {
 
     let filtered = repoResults;
 
+    // Filter the results based on the query
     if(query && query.length > 0) {
       filtered = filtered.filter((result) => {
         return result.name.toLowerCase().includes(query.toLowerCase());
       });
     }
 
+    // Sort based on the dropdown
+    switch(repoSort){
+      case RepoSort.Newest:
+        filtered = filtered.sort((a, b) => b.moment_date.diff(a.moment_date));
+        break;
+      case RepoSort.Oldest:
+        filtered = filtered.sort((a, b) => a.moment_date.diff(b.moment_date));
+        break;
+      case RepoSort.Alpha:
+        filtered = filtered.sort((a, b) => {
+          if(a.name < b.name) return -1;
+          if(a.name > b.name) return 1;
+          return 0;
+        });
+        break;
+      case RepoSort.Likes:
+        filtered = filtered.sort((a, b) => b.likes - a.likes);
+        break;
+      case RepoSort.Downloads:
+        filtered = filtered.sort((a, b) => b.downloads - a.downloads);
+        break;
+    }
+
     setFilteredResults(filtered);
     
-  }, [query, loading]);
+  }, [query, loading, repoSort]);
+
+  const sortOptions: DropdownOption[] = [
+    {
+      label: 'Newest',
+      data: RepoSort.Newest
+    },
+    {
+      label: 'Oldest',
+      data: RepoSort.Oldest
+    },
+    {
+      label: 'Alphbetical',
+      data: RepoSort.Alpha
+    },
+    {
+      label: 'Most Popular',
+      data: RepoSort.Downloads
+    },
+    {
+      label: 'Most Liked',
+      data: RepoSort.Likes
+    }
+  ];
 
   if(loading) {
     return (
@@ -96,6 +146,17 @@ export const AnimationBrowserPage: FC = () => {
           ref={searchField}
           bShowClearAction={true}  />
         </form>
+
+        <div style={{marginRight: '15px'}}>
+          <Dropdown
+          rgOptions={sortOptions}
+          selectedOption={repoSort}
+          onChange={(data) => {
+            console.log(data.data);
+            setRepoSort(data.data);
+          }}
+          />
+        </div>
 
         {/* Hacky hack… for some reason onClick isn't working here?? */}
         <DialogButton
