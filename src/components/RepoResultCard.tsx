@@ -8,7 +8,7 @@ const RepoResultCard: FC<{ result: IRepoResult, onActivate: () => void }> = ({ r
 
     <div className='Panel' style={{
       margin: 0,
-      marginBottom: '15px'
+      // marginBottom: '15px'
     }}>
 
       <div

@@ -26,7 +26,7 @@ export const AnimationBrowserPage: FC = () => {
   const { searchRepo, repoResults, searchTotal } = useAnimationContext();
   
   const [ query, setQuery ] = useState<string>('');
-  const [ loading, setLoading ] = useState(true);
+  const [ loading, setLoading ] = useState(repoResults.length === 0);
   const [ filteredResults, setFilteredResults ] = useState(repoResults);
   const searchField = useRef<any>();
 
@@ -49,7 +49,9 @@ export const AnimationBrowserPage: FC = () => {
   }
 
   useEffect(() => {
-    loadResults();
+    if(repoResults.length === 0) {
+      loadResults();
+    }
   }, []);
 
   useEffect(() => {
