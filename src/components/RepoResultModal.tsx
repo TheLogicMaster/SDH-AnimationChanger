@@ -1,9 +1,19 @@
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { Focusable, ModalRootProps, DialogButton, FocusRing } from 'decky-frontend-lib';
 import EmptyModal from "./EmptyModal";
 import RepoResult from '../models/RepoResult';
 
-const RepoResultModal: FC<ModalRootProps & { result: RepoResult }> = ({ result, ...props }) => {
+import { useAnimationContext } from '../state';
+
+const RepoResultModal: FC<ModalRootProps & { result: RepoResult, onDownloadClick: () => void }> = ({ result, onDownloadClick, ...props }) => {
+
+  const [ downloading, setDownloading ] = useState(false);
+
+  const download = async () => {
+    setDownloading(true);
+    await onDownloadClick();
+    setDownloading(false);
+  }
 
   return (
     <EmptyModal {...props}>
@@ -21,12 +31,10 @@ const RepoResultModal: FC<ModalRootProps & { result: RepoResult }> = ({ result, 
           </div>
           
           <DialogButton
-          disabled={result.downloaded}
-          onClick={() => {
-            // 
-          }}
+          disabled={result.downloaded || downloading}
+          onClick={download}
           >
-            {(result.downloaded) ? 'Downloaded' : 'Download Animation'}
+            {(result.downloaded) ? 'Downloaded' : (downloading) ? 'Downloading…' : 'Download Animation'}
           </DialogButton>
         </div>
       </div>

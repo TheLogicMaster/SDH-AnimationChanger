@@ -27,7 +27,7 @@ import { useAnimationContext } from '../state';
 
 export const AnimationBrowserPage: FC = () => {
   
-  const { searchRepo, repoResults, repoSort, setRepoSort } = useAnimationContext();
+  const { searchRepo, repoResults, repoSort, setRepoSort, downloadAnimation } = useAnimationContext();
   
   const [ query, setQuery ] = useState<string>('');
   const [ loading, setLoading ] = useState(repoResults.length === 0);
@@ -155,7 +155,6 @@ export const AnimationBrowserPage: FC = () => {
           rgOptions={sortOptions}
           selectedOption={repoSort}
           onChange={(data) => {
-            console.log(data.data);
             setRepoSort(data.data);
           }}
           />
@@ -177,7 +176,11 @@ export const AnimationBrowserPage: FC = () => {
         key={`${result.id}-${index}`}
         result={result}
         onActivate={() => {
-          showModal(<RepoResultModal result={result} />);
+          showModal(
+            <RepoResultModal
+            onDownloadClick={async () => { return downloadAnimation(result.id) }}
+            result={result} />
+          );
         }} />)}
 
       </Focusable>

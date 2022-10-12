@@ -51,7 +51,7 @@ export type AnimationContextType = {
   searchRepo: (reload?: boolean) => void;
   repoSort: RepoSort;
   setRepoSort: (arg0: RepoSort) => void;
-  downloadAnimation: (id: String) => Promise<boolean>;
+  downloadAnimation: (id: String) => void;
 }
 
 export interface AnimationProviderType {
