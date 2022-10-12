@@ -2,7 +2,8 @@ import {
   createContext,
   FC,
   useState,
-  useContext
+  useContext,
+  useEffect
 } from 'react';
 
 import { ToastData } from 'decky-frontend-lib';
@@ -12,6 +13,7 @@ import {
   AnimationProviderType,
   Animation,
   AnimationSet,
+  PluginSettings,
   IRepoResult,
   RepoSort
 } from '../types/animation';
@@ -25,17 +27,29 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
   const [ repoSort, setRepoSort ] = useState<RepoSort>(RepoSort.Newest);
   const [ repoResults, setRepoResults ] = useState<IRepoResult[]>([]);
 
-  const [ animations, setAnimations ] = useState<Animation[]>([]);
-  const [ animationSets, setAnimationSets ] = useState<AnimationSet[]>([]);
-  
-  /**
-   * Load the sets from the server API.
-   */
-  const loadSets = async () => {
-    const response = await serverAPI.callPluginMethod('getSets', {});
-    if(response.success) {
-      setAnimationSets(response.result as AnimationSet[]);
-    }
+  const [ localAnimations, setLocalAnimations ] = useState<Animation[]>([]);
+  const [ downloadedAnimations, setDownloadedAnimations ] = useState<IRepoResult[]>([]);
+  const [ localSets, setLocalSets ] = useState<AnimationSet[]>([]);
+  const [ customSets, setCustomSets ] = useState<AnimationSet[]>([]);
+  const [ settings, setSettings ] = useState<PluginSettings>({
+    randomize: false,
+    current_set: '',
+    boot: '',
+    suspend: '',
+    throbber: '',
+  });
+
+  // When the context is mounted we load the current config.
+  useEffect(() => {
+    loadBackendState();
+  }, []);
+
+  const loadBackendState = async () => {
+    const { result } = await serverAPI.callPluginMethod<any, any>('getState', {});
+
+    setDownloadedAnimations(result.downloaded_animations.map((json: any) => new RepoResult(json)));
+    setLocalAnimations(result.local_animations);
+    setSettings(result.settings);
   };
   
   const searchRepo = async (reload: Boolean = false) => {
@@ -49,28 +63,33 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
     }
 
     // @ts-ignore
-    setRepoResults(data.result.animations.map((json) => new RepoResult(json)));
+    setRepoResults(data.result.animations.map((json: any) => new RepoResult(json)));
 
   }
 
   const downloadAnimation = async (id: String) => {
-
     const response = await serverAPI.callPluginMethod('downloadAnimation', { anim_id: id });
-    console.log(response);
-
+    // Reload the backend state.
+    loadBackendState();
     return true;
+  }
+
+  const saveSettings = async (settings: PluginSettings) => {
+    await serverAPI.callPluginMethod('saveSettings', { settings });
+    loadBackendState();
   }
 
   return (
     <AnimationContext.Provider value={{
-      animations,
-      animationSets,
-      loadSets,
       repoResults,
       searchRepo,
       repoSort,
       setRepoSort,
-      downloadAnimation
+      downloadAnimation,
+      downloadedAnimations,
+      allAnimations: downloadedAnimations,
+      settings,
+      saveSettings,
     }}>
       {children}
     </AnimationContext.Provider>

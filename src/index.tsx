@@ -15,38 +15,34 @@ import {
 import { useEffect, useState, FC } from "react";
 import { FaRandom } from "react-icons/fa";
 
-import { AnimationProvider } from './state';
-
+import { AnimationProvider, useAnimationContext } from './state';
 
 import {
     AnimationBrowserPage,
     AboutPage,
-    UninstallAnimationPage
+    InstalledAnimationsPage
 } from "./animation-manager";
 
-interface SaveConfigArgs {
-    current: number
-    randomize: boolean
-}
 
-interface LoadConfigArgs {
-    current: number
-    randomize: boolean
-    animations: string[]
-}
+const Content: FC = () => {
 
-const Content: FC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
+    const { allAnimations, settings, saveSettings } = useAnimationContext();
 
-    const showError = (msg: string) => {
-        serverAPI.toaster.toast({
-            title: <div>Animation Changer Error</div>,
-            body: <div>{msg}</div>
-        })
+    const animationOptions = () => {
+        let options = allAnimations.map((animation) => {
+            return {
+                label: animation.name,
+                data: animation.id
+            }
+        });
+
+        options.unshift({
+            label: 'Default',
+            data: ''
+        });
+
+        return options;
     }
-
-    useEffect(() => {
-        // loadConfig();
-    }, []);
 
     return (
         <PanelSection>
@@ -63,17 +59,16 @@ const Content: FC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
                 </ ButtonItem>
             </PanelSectionRow>
 
-            {/*<PanelSectionRow>*/}
-            {/*    <DropdownItem*/}
-            {/*        menuLabel="Boot Animatiom"*/}
-            {/*        description="Randomize on boot"*/}
-            {/*        rgOptions={}*/}
-            {/*        selectedOption={}*/}
-            {/*        onChange={async (data) => {*/}
-            {/*            */}
-            {/*        }}*/}
-            {/*    />*/}
-            {/*</PanelSectionRow>*/}
+            <PanelSectionRow> 
+               <DropdownItem
+                label="Boot Animation"
+                menuLabel="Boot Animation"
+                rgOptions={animationOptions()}
+                selectedOption=''
+                onChange={({ data }) => {
+                    saveSettings({ ...settings, boot: data });
+                }}/>
+            </PanelSectionRow>
 
             {/*<PanelSectionRow>*/}
             {/*    <DropdownItem*/}
@@ -113,17 +108,6 @@ const Content: FC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
 
             {/*<PanelSectionRow>*/}
             {/*    <DropdownItem*/}
-            {/*        menuLabel="Boot Animatiom"*/}
-            {/*        rgOptions={}*/}
-            {/*        selectedOption={}*/}
-            {/*        onChange={async (data) => {*/}
-            {/*            */}
-            {/*        }}*/}
-            {/*    />*/}
-            {/*</PanelSectionRow>*/}
-
-            {/*<PanelSectionRow>*/}
-            {/*    <DropdownItem*/}
             {/*        menuLabel="Suspend Animatiom"*/}
             {/*        rgOptions={}*/}
             {/*        selectedOption={}*/}
@@ -144,17 +128,6 @@ const Content: FC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
             {/*    />*/}
             {/*</PanelSectionRow>*/}
 
-            <PanelSectionRow>
-                <ButtonItem
-                    layout="below"
-                    description="Reload configuration and animations"
-                    onClick={async () => {
-
-                    }}
-                >
-                    Reload
-                </ButtonItem>
-            </PanelSectionRow>
         </PanelSection>
     );
 };
@@ -187,8 +160,8 @@ const AnimationManagerRouter: FC = () => {
                 },
                 {
                     title: "Installed Animations",
-                    content: <UninstallAnimationPage />,
-                    id: "UninstallAnimations",
+                    content: <InstalledAnimationsPage />,
+                    id: "InstalledAnimations",
                 },
                 {
                     title: "About Animation Changer",
@@ -214,7 +187,7 @@ export default definePlugin((serverApi: ServerAPI) => {
         title: <div className={staticClasses.Title}>Animation Changer</div>,
         content: (
             <AnimationProvider serverAPI={serverApi}>
-                <Content serverAPI={serverApi}/>
+                <Content />
             </AnimationProvider>
         ),
         icon: <FaRandom/>
