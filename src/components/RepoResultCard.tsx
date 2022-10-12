@@ -1,8 +1,8 @@
 import { FC } from 'react';
-import { RepoResult } from '../types/animation';
 import { Focusable } from 'decky-frontend-lib';
+import { IRepoResult } from '../types/animation';
 
-const RepoResultCard: FC<{ result: RepoResult, onActivate: () => void }> = ({ result, onActivate }) => {
+const RepoResultCard: FC<{ result: IRepoResult, onActivate: () => void }> = ({ result, onActivate }) => {
 
   return (      
 
@@ -17,9 +17,9 @@ const RepoResultCard: FC<{ result: RepoResult, onActivate: () => void }> = ({ re
         height: '317px'
       }}>
         
-        <div className="gamepadhomewhatsnew_EventType_1f0dZ gamepadhomewhatsnew_EventType28_39b83">
+        {/* <div className="gamepadhomewhatsnew_EventType_1f0dZ gamepadhomewhatsnew_EventType28_39b83">
           Animation
-        </div>
+        </div> */}
 
         <Focusable
         focusWithinClassName='gpfocuswithin'
@@ -36,24 +36,22 @@ const RepoResultCard: FC<{ result: RepoResult, onActivate: () => void }> = ({ re
               style={{ maxWidth: '100%', height: 'auto', width: 'auto' }}
               className="gamepadhomewhatsnew_EventImage_116GS"/>
             <div className="gamepadhomewhatsnew_Darkener_1n_1X"></div>
-            <div className="gamepadhomewhatsnew_EventSummary_UE_Ms">This is a test</div>
+            <div
+            className="gamepadhomewhatsnew_EventSummary_UE_Ms"
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              
+            </div>
           </div>
 
           <div className="gamepadhomewhatsnew_EventInfo_6TGe7 partnereventdisplay_InLibraryView_3X6U9">
             <div className="partnereventdisplay_EventDetailTimeInfo_3Z41s">
               <Focusable>
-                <div className="localdateandtime_RightSideTitles_3sPON">Likes</div>
-                <div className="localdateandtime_ShortDateAndTime_4K3Bl">{result.likes}</div>
+                <div className="localdateandtime_RightSideTitles_3sPON">Updated</div>
+                <div className="localdateandtime_ShortDateAndTime_4K3Bl">{result.relative_date}</div>
               </Focusable>
             </div>
             <div className="gamepadhomewhatsnew_Title_1QLHG">{result.name}</div>
             <div className="gamepadhomewhatsnew_GameIconAndName_1jXSh">
-              {/*<div*/}
-              {/*  className="libraryassetimage_Container_1R9r2 libraryassetimage_GreyBackground_2E7G8 gamepadhomewhatsnew_GameIcon_2RrB8">*/}
-              {/*  <img src={result.author}*/}
-              {/*    className="libraryassetimage_Image_24_Au libraryassetimage_Visibility_3d_bT libraryassetimage_Visible_yDr03"*/}
-              {/*    alt={result.author} />*/}
-              {/*</div>*/}
               <div className="gamepadhomewhatsnew_GameName_3H9W-">{result.author}</div>
             </div>
           </div>

@@ -12,8 +12,10 @@ import {
   AnimationProviderType,
   Animation,
   AnimationSet,
-  RepoResult
+  IRepoResult
 } from '../types/animation';
+
+import RepoResult from '../models/RepoResult';
 
 const AnimationContext = createContext<AnimationContextType | null>(null);
 
@@ -21,7 +23,7 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
 
   const [ page, setPage ] = useState(0);
   const [ searchTotal, setSearchTotal ] = useState(0);
-  const [ repoResults, setRepoResults ] = useState<RepoResult[]>([]);
+  const [ repoResults, setRepoResults ] = useState<IRepoResult[]>([]);
 
   const [ animations, setAnimations ] = useState<Animation[]>([]);
   const [ animationSets, setAnimationSets ] = useState<AnimationSet[]>([]);
@@ -39,10 +41,6 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
   
   const searchRepo = async (reload: Boolean = false) => {
 
-    // TODO: make sort an enum
-    // TODO: pull query through
-    // TODO: setup pagination
-
     let data = await serverAPI.callPluginMethod<{}, {}>('getCachedAnimations', {offset: 0, count: 200, anim_type: ''});
   
     // @ts-ignore
@@ -52,7 +50,7 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
     }
 
     // @ts-ignore
-    setRepoResults(data.result.animations);
+    setRepoResults(data.result.animations.map((json) => new RepoResult(json)));
     // @ts-ignore
     setSearchTotal(data.result.animations.length);
 

@@ -1,7 +1,7 @@
 import { FC } from 'react';
-import { RepoResult } from '../types/animation';
 import { Focusable, ModalRootProps, DialogButton, FocusRing } from 'decky-frontend-lib';
 import EmptyModal from "./EmptyModal";
+import RepoResult from '../models/RepoResult';
 
 const RepoResultModal: FC<ModalRootProps & { result: RepoResult }> = ({ result, ...props }) => {
 

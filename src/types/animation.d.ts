@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { ServerAPI } from 'decky-frontend-lib';
 
-export interface RepoResult {
+export interface IRepoResult {
   id: string;
   name: string;
   preview_image: string;
@@ -16,6 +16,8 @@ export interface RepoResult {
   version: string;
   target: string;
   manifest_version: number;
+  readonly relative_date: string;
+  readonly downloaded: boolean;
 }
 
 export interface Animation {
@@ -35,7 +37,7 @@ export interface AnimationSet {
 export type AnimationContextType = {
   animations: Animation[];
   animationSets: AnimationSet[];
-  repoResults: RepoResult[];
+  repoResults: IRepoResult[];
   searchTotal: number;
   page: number;
   loadSets: () => void;
