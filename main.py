@@ -17,17 +17,6 @@ BOOT_VIDEO = 'deck_startup.webm'
 SUSPEND_VIDEO = 'deck-suspend-animation.webm'
 THROBBER_VIDEO = 'deck-suspend-animation-from-throbber.webm'
 
-DEFAULT_CONFIG = {
-    'boot': '',
-    'suspend': '',
-    'throbber': '',
-    'randomize': '',
-    'current_set': '',
-    'downloads': [],
-    'custom_animations': [],
-    'custom_sets': [],
-}
-
 logging.basicConfig(filename="/tmp/animation_changer.log",
                     format='[Animation Changer] %(asctime)s %(levelname)s %(message)s',
                     filemode='w+',
@@ -47,21 +36,14 @@ async def get_steamdeckrepo():
     try:
         animations = []
         page = 1
-        # Todo: Get JS version
         while True:
             async with ClientSession() as web:
                 async with web.request(
                         'get',
-                        f'https://steamdeckrepo.com/?sort=likes-desc&page={page}',
-                        ssl=ssl_ctx,
-                        headers={
-                            'Content-Type': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'X-Inertia': 'true',
-                            'X-Inertia-Version': 'adcdd15e906e8b262084886689d44353'
-                        }
+                        f'https://steamdeckrepo.com/api/posts?page={page}',
+                        ssl=ssl_ctx
                 ) as res:
-                    data = (await res.json())['props']['posts']['data']
+                    data = (await res.json())['posts']
             if len(data) == 0:
                 break
             animations += [{
@@ -101,7 +83,16 @@ def regenerate_downloads():
 
 def load_config():
     global config
-    config = DEFAULT_CONFIG.copy()
+    config = {
+        'boot': '',
+        'suspend': '',
+        'throbber': '',
+        'randomize': '',
+        'current_set': '',
+        'downloads': [],
+        'custom_animations': [],
+        'custom_sets': [],
+    }
 
     def save_new():
         regenerate_downloads()
@@ -195,7 +186,7 @@ def apply_animation(video, anim_id):
     if os.path.exists(override_path):
         os.remove(override_path)
 
-    if anim_id is None:
+    if anim_id == '':
         return
 
     path = None
@@ -221,7 +212,9 @@ def apply_animation(video, anim_id):
 
 
 def apply_animations():
-    ...  # Todo: Load animations from current config values
+    apply_animation(BOOT_VIDEO, config['boot'])
+    apply_animation(SUSPEND_VIDEO, config['suspend'])
+    apply_animation(THROBBER_VIDEO, config['throbber'])
 
 
 def randomize_current_set():
