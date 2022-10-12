@@ -21,7 +21,7 @@ import { AnimationProvider } from './state';
 import {
     AnimationBrowserPage,
     AboutPage,
-    UninstallAnimationPage
+    InstalledAnimationsPage
 } from "./animation-manager";
 
 interface SaveConfigArgs {
@@ -187,8 +187,8 @@ const AnimationManagerRouter: FC = () => {
                 },
                 {
                     title: "Installed Animations",
-                    content: <UninstallAnimationPage />,
-                    id: "UninstallAnimations",
+                    content: <InstalledAnimationsPage />,
+                    id: "InstalledAnimations",
                 },
                 {
                     title: "About Animation Changer",
@@ -203,6 +203,8 @@ const AnimationManagerRouter: FC = () => {
 };
   
 export default definePlugin((serverApi: ServerAPI) => {
+
+    
 
     serverApi.routerHook.addRoute("/animation-manager", () => (
         <AnimationProvider serverAPI={serverApi}>

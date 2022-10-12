@@ -132,7 +132,7 @@ export const AnimationBrowserPage: FC = () => {
   }
 
   return (
-    <>
+    <div>
       <Focusable style={{
         display: 'flex',
         flexDirection: 'row',
@@ -185,7 +185,7 @@ export const AnimationBrowserPage: FC = () => {
 
       </Focusable>
         
-    </>
+    </div>
   );
 };
   

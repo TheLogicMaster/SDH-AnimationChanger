@@ -1,12 +1,9 @@
 import { ServerAPI } from 'decky-frontend-lib';
 import { Moment } from 'moment';
 
-export interface IRepoResult {
-  id: string;
-  name: string;
+export interface IRepoResult extends Animation  {
   preview_image: string;
   preview_video: string;
-  author: string;
   description: string;
   last_changed: string;
   source: string;
@@ -21,9 +18,17 @@ export interface IRepoResult {
   readonly downloaded: boolean;
 }
 
+export interface PluginSettings {
+  randomize: boolean;
+  current_set?: AnimationSet;
+  boot?: Animation;
+  suspend?: Animation;
+  throbber?: Animation;
+}
+
 export interface Animation {
   id: string;
-  title: string;
+  name: string;
   author: string;
 }
 
@@ -44,14 +49,13 @@ export enum RepoSort {
 }
 
 export type AnimationContextType = {
-  animations: Animation[];
-  animationSets: AnimationSet[];
   repoResults: IRepoResult[];
-  loadSets: () => void;
   searchRepo: (reload?: boolean) => void;
   repoSort: RepoSort;
   setRepoSort: (arg0: RepoSort) => void;
   downloadAnimation: (id: String) => void;
+  downloadedAnimations: IRepoResult[];
+  settings: PluginSettings;
 }
 
 export interface AnimationProviderType {

@@ -1,3 +1,3 @@
 export * from './AnimationBrowserPage';
 export * from './AboutPage';
-export * from './UninstallAnimationPage';
+export * from './InstalledAnimationsPage';
