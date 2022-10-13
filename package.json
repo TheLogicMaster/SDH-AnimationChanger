@@ -1,7 +1,7 @@
 {
   "name": "decky-animation-changer",
-  "version": "0.0.1",
-  "description": "A boot/suspend animation changer/randomizer plugin.",
+  "version": "1.0.0",
+  "description": "A boot/suspend animation management plugin.",
   "scripts": {
     "build": "shx rm -rf dist && rollup -c",
     "watch": "rollup -c -w",
