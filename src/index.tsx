@@ -37,11 +37,6 @@ const Content: FC = () => {
 
     useEffect(() => {
 
-        console.log('ALL ANIMATIONS');
-        console.log(allAnimations);
-        console.log('DOWNLOADED');
-        console.log(downloadedAnimations);
-
         let bootOptions = allAnimations.filter(anim => anim.target === 'boot').map((animation) => {
             return {
                 label: animation.name,
