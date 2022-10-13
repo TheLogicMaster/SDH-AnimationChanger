@@ -19,7 +19,7 @@ export interface IRepoResult extends Animation  {
 }
 
 export interface PluginSettings {
-  randomize: boolean;
+  randomize: String;
   current_set: String;
   boot: String;
   suspend: String;
@@ -58,6 +58,9 @@ export type AnimationContextType = {
   downloadedAnimations: IRepoResult[];
   settings: PluginSettings;
   saveSettings: (settings: PluginSettings) => void;
+  lastSync: Number;
+  loadBackendState: () => void;
+  reloadConfig: () => void;
 }
 
 export interface AnimationProviderType {

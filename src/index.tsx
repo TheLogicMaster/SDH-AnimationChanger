@@ -5,14 +5,13 @@ import {
     PanelSectionRow,
     ServerAPI,
     staticClasses,
-    ToggleField,
     DropdownItem,
-    DropdownOption,
     Tabs,
-    Router
+    Router,
+    useQuickAccessVisible
 } from "decky-frontend-lib";
 
-import { useEffect, useState, FC } from "react";
+import { useEffect, useState, FC, useMemo } from "react";
 import { FaRandom } from "react-icons/fa";
 
 import { AnimationProvider, useAnimationContext } from './state';
@@ -23,12 +22,22 @@ import {
     InstalledAnimationsPage
 } from "./animation-manager";
 
-
 const Content: FC = () => {
 
-    const { allAnimations, settings, saveSettings } = useAnimationContext();
+    const { allAnimations, settings, saveSettings, loadBackendState, lastSync, reloadConfig } = useAnimationContext();
+    const qamVisible = useQuickAccessVisible();
 
-    const animationOptions = () => {
+    const [ animationOptions, setAnimationOptions ] = useState([{
+        label: 'Default',
+        data: ''
+    }]);
+
+    useEffect(() => {
+        loadBackendState();
+    }, [ qamVisible ]);
+
+    useEffect(() => {
+
         let options = allAnimations.map((animation) => {
             return {
                 label: animation.name,
@@ -41,94 +50,74 @@ const Content: FC = () => {
             data: ''
         });
 
-        return options;
-    }
+        setAnimationOptions(options);
+
+    }, [ lastSync ]);
 
     return (
-        <PanelSection>
-
-            <PanelSectionRow>   
-                <ButtonItem
-                layout="below"
-                onClick={() => {
-                    Router.CloseSideMenus();
-                    Router.Navigate('/animation-manager');
-                }}
-                >
-                Manage Animations
-                </ ButtonItem>
-            </PanelSectionRow>
-
-            <PanelSectionRow> 
-               <DropdownItem
-                label="Boot Animation"
-                menuLabel="Boot Animation"
-                rgOptions={animationOptions()}
-                selectedOption=''
-                onChange={({ data }) => {
-                    saveSettings({ ...settings, boot: data });
-                }}/>
-            </PanelSectionRow>
-
-            {/*<PanelSectionRow>*/}
-            {/*    <DropdownItem*/}
-            {/*        menuLabel="Current Set"*/}
-            {/*        description="The current animation"*/}
-            {/*        rgOptions={}*/}
-            {/*        selectedOption={}*/}
-            {/*        onChange={async (data) => {*/}
-            {/*            */}
-            {/*        }}*/}
-            {/*    />*/}
-            {/*</PanelSectionRow>*/}
-
-            <PanelSectionRow>
-                <ButtonItem
+        <>
+            <PanelSection>
+                <PanelSectionRow>
+                    <ButtonItem
                     layout="below"
-                    description="Randomize the current set"
-                    onClick={async () => {
-
+                    onClick={() => {
+                        Router.CloseSideMenus();
+                        Router.Navigate('/animation-manager');
                     }}
-                >
-                    Randomize
-                </ButtonItem>
-            </PanelSectionRow>
+                    >
+                    Manage Animations
+                    </ ButtonItem>
+                </PanelSectionRow>
+            </PanelSection>
+            <PanelSection title="Animations">
 
-            <PanelSectionRow>
-                <ButtonItem
+                <PanelSectionRow> 
+                    <DropdownItem
+                    label="Boot"
+                    menuLabel="Boot Animation"
+                    rgOptions={animationOptions}
+                    selectedOption={settings.boot}
+                    onChange={({ data }) => {
+                        saveSettings({ ...settings, boot: data });
+                    }}/>
+                </PanelSectionRow>
+
+                <PanelSectionRow> 
+                    <DropdownItem
+                    label="Suspend"
+                    menuLabel="Suspend Animation"
+                    rgOptions={animationOptions}
+                    selectedOption={settings.suspend}
+                    onChange={({ data }) => {
+                        saveSettings({ ...settings, suspend: data });
+                    }}/>
+                </PanelSectionRow>
+
+                <PanelSectionRow> 
+                    <DropdownItem
+                    label="Throbber"
+                    menuLabel="Throbber Animation"
+                    rgOptions={animationOptions}
+                    selectedOption={settings.throbber}
+                    onChange={({ data }) => {
+                        saveSettings({ ...settings, throbber: data });
+                    }}/>
+                </PanelSectionRow>
+
+                
+
+            </PanelSection>
+            <PanelSection>
+                <PanelSectionRow>
+                    <ButtonItem
                     layout="below"
-                    description="Randomize, shuffling animations"
-                    onClick={async () => {
-
-                    }}
-                >
-                    Shuffle
-                </ButtonItem>
-            </PanelSectionRow>
-
-            {/*<PanelSectionRow>*/}
-            {/*    <DropdownItem*/}
-            {/*        menuLabel="Suspend Animatiom"*/}
-            {/*        rgOptions={}*/}
-            {/*        selectedOption={}*/}
-            {/*        onChange={async (data) => {*/}
-            {/*            */}
-            {/*        }}*/}
-            {/*    />*/}
-            {/*</PanelSectionRow>*/}
-
-            {/*<PanelSectionRow>*/}
-            {/*    <DropdownItem*/}
-            {/*        menuLabel="Throbber Animatiom"*/}
-            {/*        rgOptions={}*/}
-            {/*        selectedOption={}*/}
-            {/*        onChange={async (data) => {*/}
-            {/*            */}
-            {/*        }}*/}
-            {/*    />*/}
-            {/*</PanelSectionRow>*/}
-
-        </PanelSection>
+                    onClick={reloadConfig}
+                    >
+                        Reload Config
+                    </ButtonItem>
+                </PanelSectionRow>
+            </PanelSection>
+        </>
     );
 };
 
@@ -174,6 +163,7 @@ const AnimationManagerRouter: FC = () => {
     );
     
 };
+
   
 export default definePlugin((serverApi: ServerAPI) => {
 

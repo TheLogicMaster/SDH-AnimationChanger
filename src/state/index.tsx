@@ -26,13 +26,15 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
 
   const [ repoSort, setRepoSort ] = useState<RepoSort>(RepoSort.Newest);
   const [ repoResults, setRepoResults ] = useState<IRepoResult[]>([]);
+  
+  const [ lastSync, setLastSync ] = useState(new Date().getTime());
 
   const [ localAnimations, setLocalAnimations ] = useState<Animation[]>([]);
   const [ downloadedAnimations, setDownloadedAnimations ] = useState<IRepoResult[]>([]);
   const [ localSets, setLocalSets ] = useState<AnimationSet[]>([]);
   const [ customSets, setCustomSets ] = useState<AnimationSet[]>([]);
   const [ settings, setSettings ] = useState<PluginSettings>({
-    randomize: false,
+    randomize: '',
     current_set: '',
     boot: '',
     suspend: '',
@@ -50,6 +52,7 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
     setDownloadedAnimations(result.downloaded_animations.map((json: any) => new RepoResult(json)));
     setLocalAnimations(result.local_animations);
     setSettings(result.settings);
+    setLastSync(new Date().getTime());
   };
   
   const searchRepo = async (reload: Boolean = false) => {
@@ -68,7 +71,7 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
   }
 
   const downloadAnimation = async (id: String) => {
-    const response = await serverAPI.callPluginMethod('downloadAnimation', { anim_id: id });
+    await serverAPI.callPluginMethod('downloadAnimation', { anim_id: id });
     // Reload the backend state.
     loadBackendState();
     return true;
@@ -76,6 +79,11 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
 
   const saveSettings = async (settings: PluginSettings) => {
     await serverAPI.callPluginMethod('saveSettings', { settings });
+    loadBackendState();
+  }
+
+  const reloadConfig = async () => {
+    await serverAPI.callPluginMethod('reloadConfiguration', {});
     loadBackendState();
   }
 
@@ -90,6 +98,9 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
       allAnimations: downloadedAnimations,
       settings,
       saveSettings,
+      lastSync,
+      loadBackendState,
+      reloadConfig
     }}>
       {children}
     </AnimationContext.Provider>
