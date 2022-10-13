@@ -1,9 +1,25 @@
+import { DialogButton, Router } from "decky-frontend-lib";
 import { FC } from "react";
 
 export const AboutPage: FC = () => {
   return (
     // The outermost div is to push the content down into the visible area
     <div>
+      <h2
+        style={{ fontWeight: "bold", fontSize: "1.5em", marginBottom: "0px" }}
+      >
+        Animation Changer
+      </h2>
+      <p>
+        For more information about Animation Changer including how to manually install animations, please see the README.
+      </p>
+      <DialogButton
+      onClick={() => {
+        Router.NavigateToExternalWeb('https://github.com/TheLogicMaster/SDH-AnimationChanger/blob/main/README.md');
+      }}
+      >
+        View README
+      </DialogButton>
       <h2
         style={{ fontWeight: "bold", fontSize: "1.5em", marginBottom: "0px" }}
       >
