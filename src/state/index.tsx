@@ -78,6 +78,13 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
     return true;
   }
 
+  const deleteAnimation = async (id: String) => {
+    await serverAPI.callPluginMethod('deleteAnimation', { anim_id: id });
+    // Reload the backend state.
+    loadBackendState();
+    return true;
+  }
+
   const saveSettings = async (settings: PluginSettings) => {
     await serverAPI.callPluginMethod('saveSettings', { settings });
     loadBackendState();
@@ -103,7 +110,8 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
       saveSettings,
       lastSync,
       loadBackendState,
-      reloadConfig
+      reloadConfig,
+      deleteAnimation
     }}>
       {children}
     </AnimationContext.Provider>

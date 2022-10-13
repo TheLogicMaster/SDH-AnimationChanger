@@ -64,6 +64,7 @@ export type AnimationContextType = {
   lastSync: Number;
   loadBackendState: () => void;
   reloadConfig: () => void;
+  deleteAnimation: (id: String) => void;
 }
 
 export interface AnimationProviderType {
