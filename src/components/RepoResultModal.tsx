@@ -3,16 +3,26 @@ import { Focusable, ModalRootProps, DialogButton, FocusRing } from 'decky-fronte
 import EmptyModal from "./EmptyModal";
 import RepoResult from '../models/RepoResult';
 
-import { useAnimationContext } from '../state';
-
-const RepoResultModal: FC<ModalRootProps & { result: RepoResult, onDownloadClick: () => void }> = ({ result, onDownloadClick, ...props }) => {
+const RepoResultModal: FC<ModalRootProps & {
+  result: RepoResult,
+  onDownloadClick?: () => void,
+  isDownloaded: boolean,
+  onDeleteClick?: () => void
+}> = ({ result, onDownloadClick, isDownloaded, onDeleteClick, ...props }) => {
 
   const [ downloading, setDownloading ] = useState(false);
+  const [ downloaded, setDownloaded ] = useState(isDownloaded);
 
   const download = async () => {
     setDownloading(true);
-    await onDownloadClick();
+    await onDownloadClick?.();
+    setDownloaded(true);
     setDownloading(false);
+  }
+
+  const deleteAnimation = async () => {
+    await onDeleteClick?.();
+    props.closeModal?.();
   }
 
   return (
@@ -29,13 +39,20 @@ const RepoResultModal: FC<ModalRootProps & { result: RepoResult, onDownloadClick
             <h3 style={{margin: 0}}>{result.name}</h3>
             <p>Uploaded by {result.author}</p>
           </div>
-          
-          <DialogButton
-          disabled={result.downloaded || downloading}
+
+          {!onDeleteClick && <DialogButton
+          disabled={downloaded || downloading}
           onClick={download}
           >
-            {(result.downloaded) ? 'Downloaded' : (downloading) ? 'Downloading…' : 'Download Animation'}
-          </DialogButton>
+            {(downloaded) ? 'Downloaded' : (downloading) ? 'Downloading…' : 'Download Animation'}
+          </DialogButton>}
+          
+          {onDeleteClick && <DialogButton
+          style={{background: 'var(--gpColor-Red)', color: '#fff'}}
+          onClick={deleteAnimation}
+          >
+            Delete Animation
+          </DialogButton>}
         </div>
       </div>
     </EmptyModal>

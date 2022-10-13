@@ -26,6 +26,9 @@ export const AboutPage: FC = () => {
         <li>
           <span>Beebles: UI Elements - github.com/beebls</span>
         </li>
+        <li>
+          <span>Animations from steamdeckrepo.com</span>
+        </li>
       </ul>
       <h2
         style={{ fontWeight: "bold", fontSize: "1.5em", marginBottom: "0px" }}

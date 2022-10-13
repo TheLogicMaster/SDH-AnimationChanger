@@ -6,9 +6,11 @@ import {
     ServerAPI,
     staticClasses,
     DropdownItem,
+    DropdownOption,
     Tabs,
     Router,
-    useQuickAccessVisible
+    useQuickAccessVisible,
+    ToggleField
 } from "decky-frontend-lib";
 
 import { useEffect, useState, FC, useMemo } from "react";
@@ -24,18 +26,12 @@ import {
 
 const Content: FC = () => {
 
-    const { allAnimations, settings, saveSettings, loadBackendState, lastSync, reloadConfig } = useAnimationContext();
+    const { allAnimations, settings, saveSettings, loadBackendState, lastSync, reloadConfig, shuffle } = useAnimationContext();
     const qamVisible = useQuickAccessVisible();
 
-    const [ bootAnimationOptions, setBootAnimationOptions ] = useState([{
-        label: 'Default',
-        data: ''
-    }]);
-    const [ suspendAnimationOptions, setSuspendAnimationOptions ] = useState([{
-        label: 'Default',
-        data: ''
-    }]);
-
+    const [ bootAnimationOptions, setBootAnimationOptions ] = useState<DropdownOption[]>([]);
+    const [ suspendAnimationOptions, setSuspendAnimationOptions ] = useState<DropdownOption[]>([]);
+    
     useEffect(() => {
         loadBackendState();
     }, [ qamVisible ]);
@@ -48,10 +44,12 @@ const Content: FC = () => {
                 data: animation.id
             }
         });
+
         bootOptions.unshift({
             label: 'Default',
             data: ''
         });
+        
         setBootAnimationOptions(bootOptions);
 
         // Todo: Extract to function rather than duplicate
@@ -61,13 +59,15 @@ const Content: FC = () => {
                 data: animation.id
             }
         });
+        
         suspendOptions.unshift({
             label: 'Default',
             data: ''
         });
+        
         setSuspendAnimationOptions(suspendOptions);
 
-    }, [ lastSync ]);
+    }, [ qamVisible, lastSync ]);
 
     return (
         <>
@@ -119,8 +119,26 @@ const Content: FC = () => {
                     }}/>
                 </PanelSectionRow>
 
+                <PanelSectionRow>
+                    <ButtonItem
+                    layout="below"
+                    onClick={shuffle}
+                    >
+                       Shuffle
+                    </ButtonItem>
+                </PanelSectionRow>
+
+
             </PanelSection>
-            <PanelSection>
+            <PanelSection title='Settings'>
+                <PanelSectionRow>
+                    <ToggleField
+                    label='Shuffle on Boot'
+                    onChange={(checked) => { saveSettings({ ...settings, randomize: (checked) ? 'all' : '' }) }}
+                    checked={settings.randomize == 'all'}
+                    />
+                </PanelSectionRow>
+
                 <PanelSectionRow>
                     <ButtonItem
                     layout="below"

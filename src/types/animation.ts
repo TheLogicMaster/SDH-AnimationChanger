@@ -15,7 +15,6 @@ export interface IRepoResult extends Animation  {
   manifest_version: number;
   moment_date: Moment;
   readonly relative_date: string;
-  readonly downloaded: boolean;
 }
 
 export interface PluginSettings {
@@ -65,6 +64,8 @@ export type AnimationContextType = {
   lastSync: Number;
   loadBackendState: () => void;
   reloadConfig: () => void;
+  deleteAnimation: (id: String) => void;
+  shuffle: () => void;
 }
 
 export interface AnimationProviderType {

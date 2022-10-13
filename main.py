@@ -386,10 +386,10 @@ class Plugin:
 
         await load_config()
         load_local_animations()
-        if config['randomize'] == 'set':
-            randomize_current_set()
-        elif config['randomize'] == 'all':
+        if config['randomize'] == 'all':
             randomize_all()
+        elif config['randomize'] == 'set':
+            randomize_current_set()
         apply_animations()
 
         try:

@@ -6,8 +6,6 @@ import {
   useEffect
 } from 'react';
 
-import { ToastData } from 'decky-frontend-lib';
-
 import {
   AnimationContextType,
   AnimationProviderType,
@@ -29,12 +27,11 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
   
   const [ lastSync, setLastSync ] = useState(new Date().getTime());
 
-  const [ allAnimations, setAllAnimations ] = useState<Animation[]>([]);
   const [ localAnimations, setLocalAnimations ] = useState<Animation[]>([]);
   const [ customAnimations, setCustomAnimations ] = useState<Animation[]>([]);
   const [ downloadedAnimations, setDownloadedAnimations ] = useState<IRepoResult[]>([]);
-  const [ localSets, setLocalSets ] = useState<AnimationSet[]>([]);
-  const [ customSets, setCustomSets ] = useState<AnimationSet[]>([]);
+  // const [ localSets, setLocalSets ] = useState<AnimationSet[]>([]);
+  // const [ customSets, setCustomSets ] = useState<AnimationSet[]>([]);
   const [ settings, setSettings ] = useState<PluginSettings>({
     randomize: '',
     current_set: '',
@@ -48,17 +45,21 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
     loadBackendState();
   }, []);
 
+  const sortByName = (a: any, b: any) => {
+    if(a.name < b.name) return -1;
+    if(a.name > b.name) return 1;
+    return 0;
+  };
+
   const loadBackendState = async () => {
     const { result } = await serverAPI.callPluginMethod<any, any>('getState', {});
-
-    setDownloadedAnimations(result.downloaded_animations.map((json: any) => new RepoResult(json)));
-    setLocalAnimations(result.local_animations);
-    setCustomAnimations(result.custom_animations);
-    const allAnim: Animation[] = []
-    allAnim.push(...downloadedAnimations)
-    allAnim.push(...localAnimations)
-    allAnim.push(...customAnimations)
-    setAllAnimations(allAnim)
+    setDownloadedAnimations(
+      result.
+      downloaded_animations
+      .map((json: any) => new RepoResult(json))
+      .sort(sortByName));
+    setLocalAnimations(result.local_animations.sort(sortByName));
+    setCustomAnimations(result.custom_animations.sort(sortByName));
     setSettings(result.settings);
     setLastSync(new Date().getTime());
   };
@@ -85,6 +86,13 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
     return true;
   }
 
+  const deleteAnimation = async (id: String) => {
+    await serverAPI.callPluginMethod('deleteAnimation', { anim_id: id });
+    // Reload the backend state.
+    loadBackendState();
+    return true;
+  }
+
   const saveSettings = async (settings: PluginSettings) => {
     await serverAPI.callPluginMethod('saveSettings', { settings });
     loadBackendState();
@@ -92,6 +100,11 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
 
   const reloadConfig = async () => {
     await serverAPI.callPluginMethod('reloadConfiguration', {});
+    loadBackendState();
+  }
+
+  const shuffle = async () => {
+    await serverAPI.callPluginMethod('randomize', { shuffle: true });
     loadBackendState();
   }
 
@@ -105,12 +118,14 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
       downloadedAnimations,
       customAnimations,
       localAnimations,
-      allAnimations,
+      allAnimations: (downloadedAnimations as Animation[]).concat(customAnimations, localAnimations).sort(sortByName),
       settings,
       saveSettings,
       lastSync,
       loadBackendState,
-      reloadConfig
+      reloadConfig,
+      deleteAnimation,
+      shuffle
     }}>
       {children}
     </AnimationContext.Provider>
