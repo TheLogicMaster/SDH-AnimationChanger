@@ -31,9 +31,9 @@ const Content: FC = () => {
     const [ bootAnimationOptions, setBootAnimationOptions ] = useState<DropdownOption[]>([]);
     const [ suspendAnimationOptions, setSuspendAnimationOptions ] = useState<DropdownOption[]>([]);
     
-    // useEffect(() => {
-    //     loadBackendState();
-    // }, [ qamVisible ]);
+    useEffect(() => {
+        loadBackendState();
+    }, [ qamVisible ]);
 
     useEffect(() => {
 
