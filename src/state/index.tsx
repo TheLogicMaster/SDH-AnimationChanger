@@ -47,11 +47,21 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
     loadBackendState();
   }, []);
 
+  const sortByName = (a: any, b: any) => {
+    if(a.name < b.name) return -1;
+    if(a.name > b.name) return 1;
+    return 0;
+  };
+
   const loadBackendState = async () => {
     const { result } = await serverAPI.callPluginMethod<any, any>('getState', {});
-    setDownloadedAnimations(result.downloaded_animations.map((json: any) => new RepoResult(json)));
-    setLocalAnimations(result.local_animations);
-    setCustomAnimations(result.custom_animations);
+    setDownloadedAnimations(
+      result.
+      downloaded_animations
+      .map((json: any) => new RepoResult(json))
+      .sort(sortByName));
+    setLocalAnimations(result.local_animations.sort(sortByName));
+    setCustomAnimations(result.custom_animations.sort(sortByName));
     setSettings(result.settings);
     setLastSync(new Date().getTime());
   };
@@ -105,7 +115,7 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
       downloadedAnimations,
       customAnimations,
       localAnimations,
-      allAnimations: (downloadedAnimations as Animation[]).concat(customAnimations, localAnimations),
+      allAnimations: (downloadedAnimations as Animation[]).concat(customAnimations, localAnimations).sort(sortByName),
       settings,
       saveSettings,
       lastSync,
