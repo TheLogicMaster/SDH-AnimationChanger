@@ -58,6 +58,8 @@ export type AnimationContextType = {
   downloadedAnimations: IRepoResult[];
   settings: PluginSettings;
   saveSettings: (settings: PluginSettings) => void;
+  lastSync: Number;
+  loadBackendState: () => void;
 }
 
 export interface AnimationProviderType {

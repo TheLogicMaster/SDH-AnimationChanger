@@ -5,14 +5,13 @@ import {
     PanelSectionRow,
     ServerAPI,
     staticClasses,
-    ToggleField,
     DropdownItem,
-    DropdownOption,
     Tabs,
-    Router
+    Router,
+    useQuickAccessVisible
 } from "decky-frontend-lib";
 
-import { useEffect, useState, FC } from "react";
+import { useEffect, useState, FC, useMemo } from "react";
 import { FaRandom } from "react-icons/fa";
 
 import { AnimationProvider, useAnimationContext } from './state';
@@ -23,12 +22,22 @@ import {
     InstalledAnimationsPage
 } from "./animation-manager";
 
-
 const Content: FC = () => {
 
-    const { allAnimations, settings, saveSettings } = useAnimationContext();
+    const { allAnimations, settings, saveSettings, loadBackendState, lastSync  } = useAnimationContext();
+    const qamVisible = useQuickAccessVisible();
 
-    const animationOptions = () => {
+    const [ animationOptions, setAnimationOptions ] = useState([{
+        label: 'Default',
+        data: ''
+    }]);
+
+    useEffect(() => {
+        loadBackendState();
+    }, [ qamVisible ]);
+
+    useEffect(() => {
+
         let options = allAnimations.map((animation) => {
             return {
                 label: animation.name,
@@ -41,8 +50,9 @@ const Content: FC = () => {
             data: ''
         });
 
-        return options;
-    }
+        setAnimationOptions(options);
+
+    }, [ lastSync ]);
 
     return (
         <PanelSection>
@@ -63,10 +73,32 @@ const Content: FC = () => {
                <DropdownItem
                 label="Boot Animation"
                 menuLabel="Boot Animation"
-                rgOptions={animationOptions()}
+                rgOptions={animationOptions}
                 selectedOption={settings.boot}
                 onChange={({ data }) => {
                     saveSettings({ ...settings, boot: data });
+                }}/>
+            </PanelSectionRow>
+
+            <PanelSectionRow> 
+               <DropdownItem
+                label="Suspend Animation"
+                menuLabel="Suspend Animation"
+                rgOptions={animationOptions}
+                selectedOption={settings.suspend}
+                onChange={({ data }) => {
+                    saveSettings({ ...settings, suspend: data });
+                }}/>
+            </PanelSectionRow>
+
+            <PanelSectionRow> 
+               <DropdownItem
+                label="Throbber Animation"
+                menuLabel="Throbber Animation"
+                rgOptions={animationOptions}
+                selectedOption={settings.throbber}
+                onChange={({ data }) => {
+                    saveSettings({ ...settings, throbber: data });
                 }}/>
             </PanelSectionRow>
 
@@ -82,19 +114,7 @@ const Content: FC = () => {
             {/*    />*/}
             {/*</PanelSectionRow>*/}
 
-            <PanelSectionRow>
-                <ButtonItem
-                    layout="below"
-                    description="Randomize the current set"
-                    onClick={async () => {
-
-                    }}
-                >
-                    Randomize
-                </ButtonItem>
-            </PanelSectionRow>
-
-            <PanelSectionRow>
+            {/* <PanelSectionRow>
                 <ButtonItem
                     layout="below"
                     description="Randomize, shuffling animations"
@@ -104,29 +124,7 @@ const Content: FC = () => {
                 >
                     Shuffle
                 </ButtonItem>
-            </PanelSectionRow>
-
-            {/*<PanelSectionRow>*/}
-            {/*    <DropdownItem*/}
-            {/*        menuLabel="Suspend Animatiom"*/}
-            {/*        rgOptions={}*/}
-            {/*        selectedOption={}*/}
-            {/*        onChange={async (data) => {*/}
-            {/*            */}
-            {/*        }}*/}
-            {/*    />*/}
-            {/*</PanelSectionRow>*/}
-
-            {/*<PanelSectionRow>*/}
-            {/*    <DropdownItem*/}
-            {/*        menuLabel="Throbber Animatiom"*/}
-            {/*        rgOptions={}*/}
-            {/*        selectedOption={}*/}
-            {/*        onChange={async (data) => {*/}
-            {/*            */}
-            {/*        }}*/}
-            {/*    />*/}
-            {/*</PanelSectionRow>*/}
+            </PanelSectionRow> */}
 
         </PanelSection>
     );
@@ -174,6 +172,7 @@ const AnimationManagerRouter: FC = () => {
     );
     
 };
+
   
 export default definePlugin((serverApi: ServerAPI) => {
 
