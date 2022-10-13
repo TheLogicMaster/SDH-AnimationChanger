@@ -9,35 +9,43 @@ export const InstalledAnimationsPage: FC = () => {
   
   const { downloadedAnimations, deleteAnimation } = useAnimationContext();
 
+  if(downloadedAnimations.length === 0) {
+    return (
+      <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%'}}>
+        <h2>
+          No Animations Downloaded
+        </h2>
+      </div>
+    );
+  }
+
   return (
     <div>
 
       {/* TODO: management of local animations? */}
 
-      {downloadedAnimations.length > 0 && <>
-        <h2>
-          Downloaded Animations
-        </h2>
+      <h2>
+        Downloaded Animations
+      </h2>
 
-        <Focusable style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gridAutoRows: '1fr', columnGap: '15px' }}>
+      <Focusable style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gridAutoRows: '1fr', columnGap: '15px' }}>
 
-          {downloadedAnimations.map((result, index) => <RepoResultCard
-          key={`${result.id}-${index}`}
-          result={result}
-          onActivate={async () => {
+        {downloadedAnimations.map((result, index) => <RepoResultCard
+        key={`${result.id}-${index}`}
+        result={result}
+        onActivate={async () => {
 
-            const response = await showModal(
-              <RepoResultModal
-              result={result}
-              isDownloaded={true}
-              onDeleteClick={async () => {
-                await deleteAnimation(result.id);
-              }} />
-            );
-          }} />)}
+          const response = await showModal(
+            <RepoResultModal
+            result={result}
+            isDownloaded={true}
+            onDeleteClick={async () => {
+              await deleteAnimation(result.id);
+            }} />
+          );
+        }} />)}
 
-        </Focusable>
-      </>}
+      </Focusable>
 
     </div>
   );
