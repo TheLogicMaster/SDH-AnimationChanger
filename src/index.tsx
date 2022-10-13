@@ -6,6 +6,7 @@ import {
     ServerAPI,
     staticClasses,
     DropdownItem,
+    DropdownOption,
     Tabs,
     Router,
     useQuickAccessVisible
@@ -24,23 +25,22 @@ import {
 
 const Content: FC = () => {
 
-    const { allAnimations, settings, saveSettings, loadBackendState, lastSync, reloadConfig } = useAnimationContext();
+    const { allAnimations, downloadedAnimations, settings, saveSettings, loadBackendState, lastSync, reloadConfig } = useAnimationContext();
     const qamVisible = useQuickAccessVisible();
 
-    const [ bootAnimationOptions, setBootAnimationOptions ] = useState([{
-        label: 'Default',
-        data: ''
-    }]);
-    const [ suspendAnimationOptions, setSuspendAnimationOptions ] = useState([{
-        label: 'Default',
-        data: ''
-    }]);
+    const [ bootAnimationOptions, setBootAnimationOptions ] = useState<DropdownOption[]>([]);
+    const [ suspendAnimationOptions, setSuspendAnimationOptions ] = useState<DropdownOption[]>([]);
+    
+    // useEffect(() => {
+    //     loadBackendState();
+    // }, [ qamVisible ]);
 
     useEffect(() => {
-        loadBackendState();
-    }, [ qamVisible ]);
 
-    useEffect(() => {
+        console.log('ALL ANIMATIONS');
+        console.log(allAnimations);
+        console.log('DOWNLOADED');
+        console.log(downloadedAnimations);
 
         let bootOptions = allAnimations.filter(anim => anim.target === 'boot').map((animation) => {
             return {
@@ -48,10 +48,12 @@ const Content: FC = () => {
                 data: animation.id
             }
         });
+
         bootOptions.unshift({
             label: 'Default',
             data: ''
         });
+        
         setBootAnimationOptions(bootOptions);
 
         // Todo: Extract to function rather than duplicate
@@ -61,13 +63,23 @@ const Content: FC = () => {
                 data: animation.id
             }
         });
+        
         suspendOptions.unshift({
             label: 'Default',
             data: ''
         });
+        
         setSuspendAnimationOptions(suspendOptions);
 
-    }, [ lastSync ]);
+    }, [ qamVisible, allAnimations, lastSync ]);
+
+    if(bootAnimationOptions.length === 0) {
+        return (
+            <div>
+                not loaded
+            </div>
+        )
+    }
 
     return (
         <>
