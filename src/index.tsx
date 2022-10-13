@@ -9,7 +9,8 @@ import {
     DropdownOption,
     Tabs,
     Router,
-    useQuickAccessVisible
+    useQuickAccessVisible,
+    ToggleField
 } from "decky-frontend-lib";
 
 import { useEffect, useState, FC, useMemo } from "react";
@@ -125,6 +126,14 @@ const Content: FC = () => {
                     >
                        Shuffle
                     </ButtonItem>
+                </PanelSectionRow>
+
+                <PanelSectionRow>
+                    <ToggleField
+                    label='Shuffle on Boot'
+                    onChange={(checked) => { saveSettings({ ...settings, randomize: (checked) ? 'all' : '' }) }}
+                    checked={settings.randomize == 'all'}
+                    />
                 </PanelSectionRow>
 
             </PanelSection>
