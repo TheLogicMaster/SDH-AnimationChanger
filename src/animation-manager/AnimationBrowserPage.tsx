@@ -27,7 +27,7 @@ import { useAnimationContext } from '../state';
 
 export const AnimationBrowserPage: FC = () => {
   
-  const { searchRepo, repoResults, repoSort, setRepoSort, downloadAnimation } = useAnimationContext();
+  const { searchRepo, repoResults, repoSort, setRepoSort, downloadAnimation, downloadedAnimations } = useAnimationContext();
   
   const [ query, setQuery ] = useState<string>('');
   const [ loading, setLoading ] = useState(repoResults.length === 0);
@@ -179,7 +179,8 @@ export const AnimationBrowserPage: FC = () => {
           showModal(
             <RepoResultModal
             onDownloadClick={async () => { return downloadAnimation(result.id) }}
-            result={result} />
+            result={result}
+            isDownloaded={downloadedAnimations.find(animation => animation.id == result.id) != null} />
           );
         }} />)}
 

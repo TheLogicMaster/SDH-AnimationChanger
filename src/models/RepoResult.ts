@@ -37,10 +37,6 @@ export default class RepoResult implements IRepoResult {
     return this.moment_date.fromNow();
   }
 
-  get downloaded(): boolean {
-    return false;
-  }
-
   constructor(json: any) {
     Object.assign(this, json);
     this.moment_date = moment(this.last_changed);

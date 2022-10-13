@@ -15,7 +15,6 @@ export interface IRepoResult extends Animation  {
   manifest_version: number;
   moment_date: Moment;
   readonly relative_date: string;
-  readonly downloaded: boolean;
 }
 
 export interface PluginSettings {
