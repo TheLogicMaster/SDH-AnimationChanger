@@ -82,6 +82,11 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
     loadBackendState();
   }
 
+  const reloadConfig = async () => {
+    await serverAPI.callPluginMethod('reloadConfiguration', {});
+    loadBackendState();
+  }
+
   return (
     <AnimationContext.Provider value={{
       repoResults,
@@ -94,7 +99,8 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
       settings,
       saveSettings,
       lastSync,
-      loadBackendState
+      loadBackendState,
+      reloadConfig
     }}>
       {children}
     </AnimationContext.Provider>

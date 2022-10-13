@@ -24,7 +24,7 @@ import {
 
 const Content: FC = () => {
 
-    const { allAnimations, settings, saveSettings, loadBackendState, lastSync  } = useAnimationContext();
+    const { allAnimations, settings, saveSettings, loadBackendState, lastSync, reloadConfig } = useAnimationContext();
     const qamVisible = useQuickAccessVisible();
 
     const [ animationOptions, setAnimationOptions ] = useState([{
@@ -55,78 +55,69 @@ const Content: FC = () => {
     }, [ lastSync ]);
 
     return (
-        <PanelSection>
-
-            <PanelSectionRow>   
-                <ButtonItem
-                layout="below"
-                onClick={() => {
-                    Router.CloseSideMenus();
-                    Router.Navigate('/animation-manager');
-                }}
-                >
-                Manage Animations
-                </ ButtonItem>
-            </PanelSectionRow>
-
-            <PanelSectionRow> 
-               <DropdownItem
-                label="Boot Animation"
-                menuLabel="Boot Animation"
-                rgOptions={animationOptions}
-                selectedOption={settings.boot}
-                onChange={({ data }) => {
-                    saveSettings({ ...settings, boot: data });
-                }}/>
-            </PanelSectionRow>
-
-            <PanelSectionRow> 
-               <DropdownItem
-                label="Suspend Animation"
-                menuLabel="Suspend Animation"
-                rgOptions={animationOptions}
-                selectedOption={settings.suspend}
-                onChange={({ data }) => {
-                    saveSettings({ ...settings, suspend: data });
-                }}/>
-            </PanelSectionRow>
-
-            <PanelSectionRow> 
-               <DropdownItem
-                label="Throbber Animation"
-                menuLabel="Throbber Animation"
-                rgOptions={animationOptions}
-                selectedOption={settings.throbber}
-                onChange={({ data }) => {
-                    saveSettings({ ...settings, throbber: data });
-                }}/>
-            </PanelSectionRow>
-
-            {/*<PanelSectionRow>*/}
-            {/*    <DropdownItem*/}
-            {/*        menuLabel="Current Set"*/}
-            {/*        description="The current animation"*/}
-            {/*        rgOptions={}*/}
-            {/*        selectedOption={}*/}
-            {/*        onChange={async (data) => {*/}
-            {/*            */}
-            {/*        }}*/}
-            {/*    />*/}
-            {/*</PanelSectionRow>*/}
-
-            {/* <PanelSectionRow>
-                <ButtonItem
+        <>
+            <PanelSection>
+                <PanelSectionRow>
+                    <ButtonItem
                     layout="below"
-                    description="Randomize, shuffling animations"
-                    onClick={async () => {
-
+                    onClick={() => {
+                        Router.CloseSideMenus();
+                        Router.Navigate('/animation-manager');
                     }}
-                >
-                    Shuffle
-                </ButtonItem>
-            </PanelSectionRow> */}
+                    >
+                    Manage Animations
+                    </ ButtonItem>
+                </PanelSectionRow>
+            </PanelSection>
+            <PanelSection title="Animations">
 
-        </PanelSection>
+                <PanelSectionRow> 
+                    <DropdownItem
+                    label="Boot"
+                    menuLabel="Boot Animation"
+                    rgOptions={animationOptions}
+                    selectedOption={settings.boot}
+                    onChange={({ data }) => {
+                        saveSettings({ ...settings, boot: data });
+                    }}/>
+                </PanelSectionRow>
+
+                <PanelSectionRow> 
+                    <DropdownItem
+                    label="Suspend"
+                    menuLabel="Suspend Animation"
+                    rgOptions={animationOptions}
+                    selectedOption={settings.suspend}
+                    onChange={({ data }) => {
+                        saveSettings({ ...settings, suspend: data });
+                    }}/>
+                </PanelSectionRow>
+
+                <PanelSectionRow> 
+                    <DropdownItem
+                    label="Throbber"
+                    menuLabel="Throbber Animation"
+                    rgOptions={animationOptions}
+                    selectedOption={settings.throbber}
+                    onChange={({ data }) => {
+                        saveSettings({ ...settings, throbber: data });
+                    }}/>
+                </PanelSectionRow>
+
+                
+
+            </PanelSection>
+            <PanelSection>
+                <PanelSectionRow>
+                    <ButtonItem
+                    layout="below"
+                    onClick={reloadConfig}
+                    >
+                        Reload Config
+                    </ButtonItem>
+                </PanelSectionRow>
+            </PanelSection>
+        </>
     );
 };
 

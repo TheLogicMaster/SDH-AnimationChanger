@@ -60,6 +60,7 @@ export type AnimationContextType = {
   saveSettings: (settings: PluginSettings) => void;
   lastSync: Number;
   loadBackendState: () => void;
+  reloadConfig: () => void;
 }
 
 export interface AnimationProviderType {
