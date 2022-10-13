@@ -27,7 +27,11 @@ const Content: FC = () => {
     const { allAnimations, settings, saveSettings, loadBackendState, lastSync, reloadConfig } = useAnimationContext();
     const qamVisible = useQuickAccessVisible();
 
-    const [ animationOptions, setAnimationOptions ] = useState([{
+    const [ bootAnimationOptions, setBootAnimationOptions ] = useState([{
+        label: 'Default',
+        data: ''
+    }]);
+    const [ suspendAnimationOptions, setSuspendAnimationOptions ] = useState([{
         label: 'Default',
         data: ''
     }]);
@@ -38,19 +42,30 @@ const Content: FC = () => {
 
     useEffect(() => {
 
-        let options = allAnimations.map((animation) => {
+        let bootOptions = allAnimations.filter(anim => anim.target === 'boot').map((animation) => {
             return {
                 label: animation.name,
                 data: animation.id
             }
         });
-
-        options.unshift({
+        bootOptions.unshift({
             label: 'Default',
             data: ''
         });
+        setBootAnimationOptions(bootOptions);
 
-        setAnimationOptions(options);
+        // Todo: Extract to function rather than duplicate
+        let suspendOptions = allAnimations.filter(anim => anim.target === 'suspend').map((animation) => {
+            return {
+                label: animation.name,
+                data: animation.id
+            }
+        });
+        suspendOptions.unshift({
+            label: 'Default',
+            data: ''
+        });
+        setSuspendAnimationOptions(suspendOptions);
 
     }, [ lastSync ]);
 
@@ -75,7 +90,7 @@ const Content: FC = () => {
                     <DropdownItem
                     label="Boot"
                     menuLabel="Boot Animation"
-                    rgOptions={animationOptions}
+                    rgOptions={bootAnimationOptions}
                     selectedOption={settings.boot}
                     onChange={({ data }) => {
                         saveSettings({ ...settings, boot: data });
@@ -86,7 +101,7 @@ const Content: FC = () => {
                     <DropdownItem
                     label="Suspend"
                     menuLabel="Suspend Animation"
-                    rgOptions={animationOptions}
+                    rgOptions={suspendAnimationOptions}
                     selectedOption={settings.suspend}
                     onChange={({ data }) => {
                         saveSettings({ ...settings, suspend: data });
@@ -97,14 +112,12 @@ const Content: FC = () => {
                     <DropdownItem
                     label="Throbber"
                     menuLabel="Throbber Animation"
-                    rgOptions={animationOptions}
+                    rgOptions={suspendAnimationOptions}
                     selectedOption={settings.throbber}
                     onChange={({ data }) => {
                         saveSettings({ ...settings, throbber: data });
                     }}/>
                 </PanelSectionRow>
-
-                
 
             </PanelSection>
             <PanelSection>

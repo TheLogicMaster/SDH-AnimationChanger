@@ -30,10 +30,12 @@ export interface Animation {
   id: string;
   name: string;
   author: string;
+  target: string;
 }
 
 export interface AnimationSet {
   id: string;
+  name: string;
   boot: string | null;
   suspend: string | null;
   throbber: string | null;
@@ -55,6 +57,8 @@ export type AnimationContextType = {
   setRepoSort: (arg0: RepoSort) => void;
   downloadAnimation: (id: String) => void;
   allAnimations: Animation[];
+  customAnimations: Animation[];
+  localAnimations: Animation[];
   downloadedAnimations: IRepoResult[];
   settings: PluginSettings;
   saveSettings: (settings: PluginSettings) => void;

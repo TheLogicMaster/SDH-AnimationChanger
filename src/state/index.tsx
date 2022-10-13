@@ -29,7 +29,9 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
   
   const [ lastSync, setLastSync ] = useState(new Date().getTime());
 
+  const [ allAnimations, setAllAnimations ] = useState<Animation[]>([]);
   const [ localAnimations, setLocalAnimations ] = useState<Animation[]>([]);
+  const [ customAnimations, setCustomAnimations ] = useState<Animation[]>([]);
   const [ downloadedAnimations, setDownloadedAnimations ] = useState<IRepoResult[]>([]);
   const [ localSets, setLocalSets ] = useState<AnimationSet[]>([]);
   const [ customSets, setCustomSets ] = useState<AnimationSet[]>([]);
@@ -51,6 +53,12 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
 
     setDownloadedAnimations(result.downloaded_animations.map((json: any) => new RepoResult(json)));
     setLocalAnimations(result.local_animations);
+    setCustomAnimations(result.custom_animations);
+    const allAnim: Animation[] = []
+    allAnim.push(...downloadedAnimations)
+    allAnim.push(...localAnimations)
+    allAnim.push(...customAnimations)
+    setAllAnimations(allAnim)
     setSettings(result.settings);
     setLastSync(new Date().getTime());
   };
@@ -95,7 +103,9 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
       setRepoSort,
       downloadAnimation,
       downloadedAnimations,
-      allAnimations: downloadedAnimations,
+      customAnimations,
+      localAnimations,
+      allAnimations,
       settings,
       saveSettings,
       lastSync,

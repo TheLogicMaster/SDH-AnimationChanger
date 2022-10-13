@@ -18,6 +18,7 @@ THROBBER_VIDEO = 'deck-suspend-animation-from-throbber.webm'
 
 VIDEOS_NAMES = [BOOT_VIDEO, SUSPEND_VIDEO, THROBBER_VIDEO]
 VIDEO_TYPES = ['boot', 'suspend', 'throbber']
+VIDEO_TARGETS = ['boot', 'suspend', 'suspend']
 
 logging.basicConfig(filename="/tmp/animation_changer.log",
                     format='[Animation Changer] %(asctime)s %(levelname)s %(message)s',
@@ -168,20 +169,20 @@ def load_local_animations():
             'enabled': anim_config['enabled'] if 'enabled' in anim_config else True
         }
 
-        def process_animation(default, target):
-            filename = default if target not in anim_config else anim_config[target]
-            if target not in anim_config and not os.path.exists(f'{ANIMATIONS_PATH}/{directory}/{filename}'):
+        def process_animation(default, anim_type, target):
+            filename = default if anim_type not in anim_config else anim_config[anim_type]
+            if anim_type not in anim_config and not os.path.exists(f'{ANIMATIONS_PATH}/{directory}/{filename}'):
                 filename = ''
-            local_set[target] = filename
+            local_set[anim_type] = filename
             if filename != '' and filename is not None:
                 animations.append({
                     'id': f'{directory}/{filename}',
-                    'name': directory,
+                    'name': directory if anim_type == 'boot' else f'{directory} - {anim_type.capitalize()}',
                     'target': target
                 })
 
         for i in range(3):
-            process_animation(VIDEOS_NAMES[i], VIDEO_TYPES[i])
+            process_animation(VIDEOS_NAMES[i], VIDEO_TYPES[i], VIDEO_TARGETS[i])
 
         sets.append(local_set)
 
