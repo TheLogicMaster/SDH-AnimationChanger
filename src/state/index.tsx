@@ -6,8 +6,6 @@ import {
   useEffect
 } from 'react';
 
-import { ToastData } from 'decky-frontend-lib';
-
 import {
   AnimationContextType,
   AnimationProviderType,
@@ -32,8 +30,8 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
   const [ localAnimations, setLocalAnimations ] = useState<Animation[]>([]);
   const [ customAnimations, setCustomAnimations ] = useState<Animation[]>([]);
   const [ downloadedAnimations, setDownloadedAnimations ] = useState<IRepoResult[]>([]);
-  const [ localSets, setLocalSets ] = useState<AnimationSet[]>([]);
-  const [ customSets, setCustomSets ] = useState<AnimationSet[]>([]);
+  // const [ localSets, setLocalSets ] = useState<AnimationSet[]>([]);
+  // const [ customSets, setCustomSets ] = useState<AnimationSet[]>([]);
   const [ settings, setSettings ] = useState<PluginSettings>({
     randomize: '',
     current_set: '',
@@ -105,6 +103,10 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
     loadBackendState();
   }
 
+  const shuffle = async () => {
+    loadBackendState();
+  }
+
   return (
     <AnimationContext.Provider value={{
       repoResults,
@@ -121,7 +123,8 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
       lastSync,
       loadBackendState,
       reloadConfig,
-      deleteAnimation
+      deleteAnimation,
+      shuffle
     }}>
       {children}
     </AnimationContext.Provider>

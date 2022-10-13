@@ -25,7 +25,7 @@ import {
 
 const Content: FC = () => {
 
-    const { allAnimations, downloadedAnimations, settings, saveSettings, loadBackendState, lastSync, reloadConfig } = useAnimationContext();
+    const { allAnimations, settings, saveSettings, loadBackendState, lastSync, reloadConfig, shuffle } = useAnimationContext();
     const qamVisible = useQuickAccessVisible();
 
     const [ bootAnimationOptions, setBootAnimationOptions ] = useState<DropdownOption[]>([]);
@@ -66,15 +66,7 @@ const Content: FC = () => {
         
         setSuspendAnimationOptions(suspendOptions);
 
-    }, [ qamVisible, allAnimations, lastSync ]);
-
-    if(bootAnimationOptions.length === 0) {
-        return (
-            <div>
-                not loaded
-            </div>
-        )
-    }
+    }, [ qamVisible, lastSync ]);
 
     return (
         <>
@@ -124,6 +116,15 @@ const Content: FC = () => {
                     onChange={({ data }) => {
                         saveSettings({ ...settings, throbber: data });
                     }}/>
+                </PanelSectionRow>
+
+                <PanelSectionRow>
+                    <ButtonItem
+                    layout="below"
+                    onClick={shuffle}
+                    >
+                       Shuffle
+                    </ButtonItem>
                 </PanelSectionRow>
 
             </PanelSection>

@@ -65,6 +65,7 @@ export type AnimationContextType = {
   loadBackendState: () => void;
   reloadConfig: () => void;
   deleteAnimation: (id: String) => void;
+  shuffle: () => void;
 }
 
 export interface AnimationProviderType {
