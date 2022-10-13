@@ -104,6 +104,7 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
   }
 
   const shuffle = async () => {
+    await serverAPI.callPluginMethod('randomize', { shuffle: true });
     loadBackendState();
   }
 

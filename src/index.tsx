@@ -128,6 +128,9 @@ const Content: FC = () => {
                     </ButtonItem>
                 </PanelSectionRow>
 
+
+            </PanelSection>
+            <PanelSection title='Settings'>
                 <PanelSectionRow>
                     <ToggleField
                     label='Shuffle on Boot'
@@ -136,8 +139,6 @@ const Content: FC = () => {
                     />
                 </PanelSectionRow>
 
-            </PanelSection>
-            <PanelSection>
                 <PanelSectionRow>
                     <ButtonItem
                     layout="below"
