@@ -25,8 +25,6 @@ const RepoResultModal: FC<ModalRootProps & {
     props.closeModal?.();
   }
 
-  console.log(EmptyModal);
-
   return (
     <EmptyModal {...props}>
       <div style={{display: 'flex', flexDirection: 'row'}}>
