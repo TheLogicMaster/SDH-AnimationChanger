@@ -114,6 +114,7 @@ async def load_config():
         'downloads': [],
         'custom_animations': [],
         'custom_sets': [],
+        'shuffle_exclusions': [],
     }
 
     async def save_new():
@@ -262,11 +263,11 @@ def randomize_current_set():
 
 
 def randomize_all():
-    # Todo: This shuffles all animations for now, but the set shuffling might be desired
-    # active = get_active_sets()
     for i in range(3):
-        pool = [anim for anim in local_animations + config['downloads'] + config['custom_animations'] if anim['target'] == VIDEO_TARGETS[i]]
-        # pool = [entry[VIDEO_TYPES[i]] for entry in active if entry[VIDEO_TYPES[i]] and entry[VIDEO_TYPES[i]] != '']
+        pool = [
+            anim for anim in local_animations + config['downloads'] + config['custom_animations']
+            if anim['target'] == VIDEO_TARGETS[i] and anim['id'] not in config['shuffle_exclusions']
+        ]
         if len(pool) > 0:
             config[VIDEO_TYPES[i]] = pool[random.randint(0, len(pool) - 1)]['id']
     config['current_set'] = ''
@@ -287,7 +288,8 @@ class Plugin:
                 'current_set': config['current_set'],
                 'boot': config['boot'],
                 'suspend': config['suspend'],
-                'throbber': config['throbber']
+                'throbber': config['throbber'],
+                'shuffle_exclusions': config['shuffle_exclusions']
             }
         }
 
