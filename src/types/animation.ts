@@ -49,11 +49,19 @@ export enum RepoSort {
   Oldest
 }
 
+export enum TargetType {
+  All,
+  Boot,
+  Suspend
+}
+
 export type AnimationContextType = {
   repoResults: IRepoResult[];
   searchRepo: (reload?: boolean) => void;
   repoSort: RepoSort;
   setRepoSort: (arg0: RepoSort) => void;
+  targetType: TargetType;
+  setTargetType: (arg0: TargetType) => void;
   downloadAnimation: (id: String) => void;
   allAnimations: Animation[];
   customAnimations: Animation[];
