@@ -53,7 +53,7 @@ async def get_steamdeckrepo():
                             data = (await res.json())['posts']
                             break
             else:
-                raise Exception('Failed to ')
+                raise Exception('Failed to fetch steamdeckrepo')
             if len(data) == 0:
                 break
             animations += [{
