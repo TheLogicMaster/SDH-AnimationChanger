@@ -58,6 +58,7 @@ const RepoResultCard: FC<{ result: IRepoResult, onActivate: () => void }> = ({ r
             <div className="gamepadhomewhatsnew_GameIconAndName_1jXSh">
               <div className="gamepadhomewhatsnew_GameName_3H9W-">{result.author}</div>
             </div>
+            <div>{result.target === 'boot' ? 'Boot' : 'Suspend'}</div>
           </div>
 
         </Focusable>

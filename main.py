@@ -20,6 +20,8 @@ VIDEOS_NAMES = [BOOT_VIDEO, SUSPEND_VIDEO, THROBBER_VIDEO]
 VIDEO_TYPES = ['boot', 'suspend', 'throbber']
 VIDEO_TARGETS = ['boot', 'suspend', 'suspend']
 
+REQUEST_RETRIES = 5
+
 logging.basicConfig(filename="/tmp/animation_changer.log",
                     format='[Animation Changer] %(asctime)s %(levelname)s %(message)s',
                     filemode='w+',
@@ -40,13 +42,18 @@ async def get_steamdeckrepo():
         animations = []
         page = 1
         while True:
-            async with ClientSession() as web:
-                async with web.request(
-                        'get',
-                        f'https://steamdeckrepo.com/api/posts?page={page}',
-                        ssl=ssl_ctx
-                ) as res:
-                    data = (await res.json())['posts']
+            for _ in range(REQUEST_RETRIES):
+                async with ClientSession() as web:
+                    async with web.request(
+                            'get',
+                            f'https://steamdeckrepo.com/api/posts?page={page}',
+                            ssl=ssl_ctx
+                    ) as res:
+                        if res.status == 200:
+                            data = (await res.json())['posts']
+                            break
+            else:
+                raise Exception('Failed to ')
             if len(data) == 0:
                 break
             animations += [{
@@ -62,9 +69,9 @@ async def get_steamdeckrepo():
                 'likes': entry['likes'],
                 'downloads': entry['downloads'],
                 'version': '',
-                'target': 'boot',
+                'target': 'suspend' if entry['type'] == 'suspend_video' else 'boot',
                 'manifest_version': 1
-            } for entry in data]
+            } for entry in data if entry['type'] in ['suspend_video', 'boot_video']]
             page += 1
         return animations
     except Exception as e:
