@@ -30,7 +30,8 @@ const RepoResultModal: FC<ModalRootProps & {
       <div style={{display: 'flex', flexDirection: 'row'}}>
         <div style={{flex: 1}}>
           <video style={{width: '100%', height: 'auto'}} poster={result.preview_image} autoPlay={true} controls={true}>
-            <source src={result.preview_video} />
+            <source src={result.preview_video} type="video/mp4" />
+            <source src={result.download_url} type="video/webm" />
           </video>
         </div>
 

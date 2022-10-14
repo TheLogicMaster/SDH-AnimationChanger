@@ -10,7 +10,8 @@ import {
     Tabs,
     Router,
     useQuickAccessVisible,
-    ToggleField
+    ToggleField,
+    findModule
 } from "decky-frontend-lib";
 
 import { useEffect, useState, FC, useMemo } from "react";
@@ -156,6 +157,17 @@ const Content: FC = () => {
 const AnimationManagerRouter: FC = () => {
 
     const [ currentTabRoute, setCurrentTabRoute ] = useState<string>("AnimationBrowser");
+    const { repoResults, downloadedAnimations } = useAnimationContext();
+
+    const { TabCount } = findModule((mod) => {
+        if (typeof mod !== 'object') return false;
+      
+        if (mod.TabCount && mod.TabTitle) {
+          return true;
+        }
+      
+        return false;
+    });
 
     return (
         <div
@@ -177,11 +189,13 @@ const AnimationManagerRouter: FC = () => {
                     title: "Browse Animations",
                     content: <AnimationBrowserPage />,
                     id: "AnimationBrowser",
+                    renderTabAddon: () => <span className={TabCount}>{repoResults.length}</span>
                 },
                 {
                     title: "Installed Animations",
                     content: <InstalledAnimationsPage />,
                     id: "InstalledAnimations",
+                    renderTabAddon: () => <span className={TabCount}>{downloadedAnimations.length}</span>
                 },
                 {
                     title: "About Animation Changer",

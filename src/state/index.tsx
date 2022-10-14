@@ -10,7 +10,7 @@ import {
   AnimationContextType,
   AnimationProviderType,
   Animation,
-  AnimationSet,
+  TargetType,
   PluginSettings,
   IRepoResult,
   RepoSort
@@ -24,14 +24,15 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
 
   const [ repoSort, setRepoSort ] = useState<RepoSort>(RepoSort.Newest);
   const [ repoResults, setRepoResults ] = useState<IRepoResult[]>([]);
+  const [ targetType, setTargetType ] = useState<TargetType>(TargetType.All);
   
   const [ lastSync, setLastSync ] = useState(new Date().getTime());
 
   const [ localAnimations, setLocalAnimations ] = useState<Animation[]>([]);
   const [ customAnimations, setCustomAnimations ] = useState<Animation[]>([]);
   const [ downloadedAnimations, setDownloadedAnimations ] = useState<IRepoResult[]>([]);
-  // const [ localSets, setLocalSets ] = useState<AnimationSet[]>([]);
-  // const [ customSets, setCustomSets ] = useState<AnimationSet[]>([]);
+  
+
   const [ settings, setSettings ] = useState<PluginSettings>({
     randomize: '',
     current_set: '',
@@ -125,7 +126,9 @@ export const AnimationProvider: FC<AnimationProviderType> = ({ serverAPI, childr
       loadBackendState,
       reloadConfig,
       deleteAnimation,
-      shuffle
+      shuffle,
+      targetType,
+      setTargetType
     }}>
       {children}
     </AnimationContext.Provider>

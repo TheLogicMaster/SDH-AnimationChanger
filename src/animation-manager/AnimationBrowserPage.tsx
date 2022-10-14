@@ -9,7 +9,6 @@ import {
 
 import {
   Focusable,
-  PanelSectionRow,
   Dropdown,
   DropdownOption,
   showModal,
@@ -21,13 +20,22 @@ import {
 import RepoResultCard from '../components/RepoResultCard';
 import RepoResultModal from '../components/RepoResultModal';
 
-import { RepoSort } from '../types/animation';
+import { RepoSort, TargetType } from '../types/animation';
 
 import { useAnimationContext } from '../state';
 
 export const AnimationBrowserPage: FC = () => {
   
-  const { searchRepo, repoResults, repoSort, setRepoSort, downloadAnimation, downloadedAnimations } = useAnimationContext();
+  const {
+    searchRepo,
+    repoResults,
+    repoSort,
+    targetType,
+    setTargetType,
+    setRepoSort,
+    downloadAnimation,
+    downloadedAnimations
+  } = useAnimationContext();
   
   const [ query, setQuery ] = useState<string>('');
   const [ loading, setLoading ] = useState(repoResults.length === 0);
@@ -65,6 +73,17 @@ export const AnimationBrowserPage: FC = () => {
 
     let filtered = repoResults;
 
+    // Filter based on the target type
+
+    switch(targetType) {
+      case TargetType.Boot:
+        filtered = filtered.filter((result) => result.target == 'boot');
+        break;
+      case TargetType.Suspend:
+        filtered = filtered.filter((result) => result.target == 'suspend');
+        break;
+    }
+
     // Filter the results based on the query
     if(query && query.length > 0) {
       filtered = filtered.filter((result) => {
@@ -98,7 +117,7 @@ export const AnimationBrowserPage: FC = () => {
     setFilteredResults(filtered);
     forceUpdate();
     
-  }, [query, loading, repoSort]);
+  }, [query, loading, repoSort, targetType]);
 
   const sortOptions: DropdownOption[] = [
     {
@@ -120,6 +139,21 @@ export const AnimationBrowserPage: FC = () => {
     {
       label: 'Most Liked',
       data: RepoSort.Likes
+    }
+  ];
+
+  const targetOptions: DropdownOption[] = [
+    {
+      label: 'All',
+      data: TargetType.All
+    },
+    {
+      label: 'Boot',
+      data: TargetType.Boot
+    },
+    {
+      label: 'Suspend',
+      data: TargetType.Suspend
     }
   ];
 
@@ -152,10 +186,22 @@ export const AnimationBrowserPage: FC = () => {
 
         <div style={{marginRight: '15px'}}>
           <Dropdown
+          menuLabel='Sort'
           rgOptions={sortOptions}
           selectedOption={repoSort}
           onChange={(data) => {
             setRepoSort(data.data);
+          }}
+          />
+        </div>
+
+        <div style={{marginRight: '15px'}}>
+          <Dropdown
+          menuLabel='Animation Type'
+          rgOptions={targetOptions}
+          selectedOption={targetType}
+          onChange={(data) => {
+            setTargetType(data.data);
           }}
           />
         </div>

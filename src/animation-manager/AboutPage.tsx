@@ -1,10 +1,9 @@
-import { DialogButton, Router } from "decky-frontend-lib";
+import { DialogButton, Router, Focusable } from "decky-frontend-lib";
 import { FC } from "react";
 
 export const AboutPage: FC = () => {
   return (
-    // The outermost div is to push the content down into the visible area
-    <div>
+    <Focusable>
       <h2
         style={{ fontWeight: "bold", fontSize: "1.5em", marginBottom: "0px" }}
       >
@@ -14,6 +13,7 @@ export const AboutPage: FC = () => {
         For more information about Animation Changer including how to manually install animations, please see the README.
       </p>
       <DialogButton
+      style={{width: 300}}
       onClick={() => {
         Router.NavigateToExternalWeb('https://github.com/TheLogicMaster/SDH-AnimationChanger/blob/main/README.md');
       }}
@@ -56,6 +56,6 @@ export const AboutPage: FC = () => {
         <br />
         discord.gg/ZU74G2NJzk
       </span>
-    </div>
+    </Focusable>
   );
 };
