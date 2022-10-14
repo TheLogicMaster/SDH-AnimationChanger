@@ -1,9 +1,29 @@
 import { FC } from 'react';
-import { Focusable, SuspensefulImage } from 'decky-frontend-lib';
+import { Focusable, findModule } from 'decky-frontend-lib';
 import { IRepoResult } from '../types/animation';
 import { FaDownload, FaThumbsUp } from "react-icons/fa";
+import ExtractedClasses from '../utils/ExtractedClasses';
 
 const RepoResultCard: FC<{ result: IRepoResult, onActivate: () => void }> = ({ result, onActivate }) => {
+
+  const {
+    EventType,
+    EventType28,
+    OuterWrapper,
+    EventPreviewContainer,
+    EventImageWrapper,
+    EventImage,
+    Darkener,
+    EventSummary,
+    EventInfo,
+    GameIconAndName,
+    GameName,
+    Title,
+    RightSideTitles,
+    ShortDateAndTime,
+    EventDetailTimeInfo,
+    InLibraryView
+  } = ExtractedClasses.getInstance().found;
 
   return (      
 
@@ -12,33 +32,33 @@ const RepoResultCard: FC<{ result: IRepoResult, onActivate: () => void }> = ({ r
     }}>
 
       <div
-      className="gamepadhomewhatsnew_OuterWrapper_3DpEz"
+      className={OuterWrapper}
       style={{
         height: '317px'
       }}>
         
-        <div className="gamepadhomewhatsnew_EventType_1f0dZ gamepadhomewhatsnew_EventType28_39b83">
+        <div className={`${EventType} ${EventType28}`}>
           {result.target === 'boot' ? 'Boot' : 'Suspend'}
         </div>
 
         <Focusable
         focusWithinClassName='gpfocuswithin'
-        className="gamepadhomewhatsnew_EventPreviewContainer_1ltOY Panel"
+        className={`${EventPreviewContainer} Panel`}
         onActivate={onActivate}
         style={{
           margin: 0,
           marginBottom: '15px'
         }}>
           
-          <div className="gamepadhomewhatsnew_EventImageWrapper_XLJ9p">
-            <SuspensefulImage
+          <div className={EventImageWrapper}>
+            <img
             src={result.preview_image}
             style={{ width: '100%', height: '160px', objectFit: 'cover' }}
-            className="gamepadhomewhatsnew_EventImage_116GS"
+            className={EventImage}
             />
-            <div className="gamepadhomewhatsnew_Darkener_1n_1X"></div>
+            <div className={Darkener}></div>
             <div
-            className="gamepadhomewhatsnew_EventSummary_UE_Ms"
+            className={EventSummary}
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               
               <FaDownload style={{marginRight: '5px'}} /> {result.downloads}
@@ -47,16 +67,16 @@ const RepoResultCard: FC<{ result: IRepoResult, onActivate: () => void }> = ({ r
             </div>
           </div>
 
-          <div className="gamepadhomewhatsnew_EventInfo_6TGe7 partnereventdisplay_InLibraryView_3X6U9">
-            <div className="partnereventdisplay_EventDetailTimeInfo_3Z41s">
+          <div className={`${EventInfo} ${InLibraryView}`}>
+            <div className={EventDetailTimeInfo}>
               <Focusable>
-                <div className="localdateandtime_RightSideTitles_3sPON">Updated</div>
-                <div className="localdateandtime_ShortDateAndTime_4K3Bl">{result.relative_date}</div>
+                <div className={RightSideTitles}>Updated</div>
+                <div className={ShortDateAndTime}>{result.relative_date}</div>
               </Focusable>
             </div>
-            <div className="gamepadhomewhatsnew_Title_1QLHG">{result.name}</div>
-            <div className="gamepadhomewhatsnew_GameIconAndName_1jXSh">
-              <div className="gamepadhomewhatsnew_GameName_3H9W-">{result.author}</div>
+            <div className={Title}>{result.name}</div>
+            <div className={GameIconAndName}>
+              <div className={GameName}>{result.author}</div>
             </div>
           </div>
 
