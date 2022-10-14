@@ -25,12 +25,14 @@ const RepoResultModal: FC<ModalRootProps & {
     props.closeModal?.();
   }
 
+  console.log(EmptyModal);
+
   return (
     <EmptyModal {...props}>
       <div style={{display: 'flex', flexDirection: 'row'}}>
         <div style={{flex: 1}}>
           <video style={{width: '100%', height: 'auto'}} poster={result.preview_image} autoPlay={true} controls={true}>
-            <source src={result.preview_video} />
+            <source src={result.download_url} />
           </video>
         </div>
 

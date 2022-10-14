@@ -9,7 +9,6 @@ const RepoResultCard: FC<{ result: IRepoResult, onActivate: () => void }> = ({ r
 
     <div className='Panel' style={{
       margin: 0,
-      // marginBottom: '15px'
     }}>
 
       <div
@@ -18,9 +17,9 @@ const RepoResultCard: FC<{ result: IRepoResult, onActivate: () => void }> = ({ r
         height: '317px'
       }}>
         
-        {/* <div className="gamepadhomewhatsnew_EventType_1f0dZ gamepadhomewhatsnew_EventType28_39b83">
-          Animation
-        </div> */}
+        <div className="gamepadhomewhatsnew_EventType_1f0dZ gamepadhomewhatsnew_EventType28_39b83">
+          {result.target === 'boot' ? 'Boot' : 'Suspend'}
+        </div>
 
         <Focusable
         focusWithinClassName='gpfocuswithin'
@@ -58,7 +57,6 @@ const RepoResultCard: FC<{ result: IRepoResult, onActivate: () => void }> = ({ r
             <div className="gamepadhomewhatsnew_GameIconAndName_1jXSh">
               <div className="gamepadhomewhatsnew_GameName_3H9W-">{result.author}</div>
             </div>
-            <div>{result.target === 'boot' ? 'Boot' : 'Suspend'}</div>
           </div>
 
         </Focusable>
