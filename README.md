@@ -18,6 +18,8 @@ The name of the directory is used as the animation label and each directory take
 from the default names. An empty string `""` or a missing file means to revert to the stock
 animation when changing sets (Animation sets not implemented yet). `null` can be used to leave
 the existing animation.
+Press the reload button in the plugin's quick access menu page for manually added animations
+to be detected. 
 
 Example `config.json` configuration (Using default file names):
 ```json

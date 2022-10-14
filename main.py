@@ -52,6 +52,7 @@ async def get_steamdeckrepo():
                         if res.status == 200:
                             data = (await res.json())['posts']
                             break
+                        logger.warning('steamdeckrepo fetch failed, retrying')
             else:
                 raise Exception('Failed to fetch steamdeckrepo')
             if len(data) == 0:
@@ -137,13 +138,19 @@ async def load_config():
         await save_new()
 
 
+def raise_and_log(msg, ex=None):
+    logger.error(msg, exc_info=ex)
+    if ex is None:
+        raise Exception(msg)
+    raise ex
+
+
 def save_config():
     try:
         with open(CONFIG_PATH, 'w') as f:
             json.dump(config, f, indent=4)
     except Exception as e:
-        logger.error('Failed to save config', exc_info=e)
-        raise e
+        raise_and_log('Failed to save config', e)
 
 
 def load_local_animations():
@@ -163,7 +170,7 @@ def load_local_animations():
                     anim_config = json.load(f)
                 is_set = True
             except Exception as e:
-                logger.error(f'Failed to parse config.json for: {directory}', exc_info=e)
+                logger.warning(f'Failed to parse config.json for: {directory}', exc_info=e)
         else:
             for video in [BOOT_VIDEO, SUSPEND_VIDEO, THROBBER_VIDEO]:
                 if os.path.exists(f'{ANIMATIONS_PATH}/{directory}/{video}'):
@@ -230,7 +237,7 @@ def apply_animation(video, anim_id):
                     break
 
     if path is None or not os.path.exists(path):
-        raise Exception(f'Failed to find animation for: {anim_id}')
+        raise_and_log(f'Failed to find animation for: {anim_id}')
 
     os.symlink(path, override_path)
 
@@ -348,10 +355,10 @@ class Plugin:
                 return
         async with aiohttp.ClientSession() as web:
             if (anim := find_cached_animation(anim_id)) is None:
-                raise Exception(f'Failed to find cached animation with id: {id}')
+                raise_and_log(f'Failed to find cached animation with id: {id}')
             async with web.get(anim['download_url'], ssl=ssl_ctx) as response:
                 if response.status != 200:
-                    raise Exception(f'Invalid download request status: {response.status}')
+                    raise_and_log(f'Invalid download request status: {response.status}')
                 data = await response.read()
         with open(f'{DOWNLOADS_PATH}/{anim_id}.webm', 'wb') as f:
             f.write(data)
@@ -377,7 +384,7 @@ class Plugin:
         apply_animations()
 
     async def randomize(self, shuffle):
-        """ Randomize animations in active sets """
+        """ Randomize animations """
         if shuffle:
             randomize_all()
         else:
@@ -395,11 +402,16 @@ class Plugin:
 
         await load_config()
         load_local_animations()
+
         if config['randomize'] == 'all':
             randomize_all()
         elif config['randomize'] == 'set':
             randomize_current_set()
-        apply_animations()
+
+        try:
+            apply_animations()
+        except:
+            ...
 
         try:
             await update_cache()
