@@ -9,7 +9,6 @@ import {
 
 import {
   Focusable,
-  PanelSectionRow,
   Dropdown,
   DropdownOption,
   showModal,

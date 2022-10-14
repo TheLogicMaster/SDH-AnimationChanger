@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { Focusable } from 'decky-frontend-lib';
+import { Focusable, SuspensefulImage } from 'decky-frontend-lib';
 import { IRepoResult } from '../types/animation';
 import { FaDownload, FaThumbsUp } from "react-icons/fa";
 
@@ -31,10 +31,11 @@ const RepoResultCard: FC<{ result: IRepoResult, onActivate: () => void }> = ({ r
         }}>
           
           <div className="gamepadhomewhatsnew_EventImageWrapper_XLJ9p">
-            <img
-              src={result.preview_image}
-              style={{ width: '100%', height: '160px', objectFit: 'cover' }}
-              className="gamepadhomewhatsnew_EventImage_116GS"/>
+            <SuspensefulImage
+            src={result.preview_image}
+            style={{ width: '100%', height: '160px', objectFit: 'cover' }}
+            className="gamepadhomewhatsnew_EventImage_116GS"
+            />
             <div className="gamepadhomewhatsnew_Darkener_1n_1X"></div>
             <div
             className="gamepadhomewhatsnew_EventSummary_UE_Ms"
