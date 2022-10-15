@@ -2,6 +2,7 @@ import { FC, useState } from 'react';
 import { Focusable, ModalRootProps, DialogButton, FocusRing } from 'decky-frontend-lib';
 import EmptyModal from "./EmptyModal";
 import RepoResult from '../models/RepoResult';
+import ExtractedClasses from '../utils/ExtractedClasses';
 
 const RepoResultModal: FC<ModalRootProps & {
   result: RepoResult,
@@ -25,6 +26,11 @@ const RepoResultModal: FC<ModalRootProps & {
     props.closeModal?.();
   }
 
+  const {
+    GameIconAndName,
+    GameName
+  } = ExtractedClasses.getInstance().found;
+
   return (
     <EmptyModal {...props}>
       <div style={{display: 'flex', flexDirection: 'row'}}>
@@ -38,7 +44,10 @@ const RepoResultModal: FC<ModalRootProps & {
         <div style={{display: 'flex', flex: 1, flexDirection: 'column', paddingLeft: '15px'}}>
           <div style={{flex: 1}}>
             <h3 style={{margin: 0}}>{result.name}</h3>
-            <p>Uploaded by {result.author}</p>
+            <div className={GameIconAndName}>
+              <div className={GameName}>Uploaded by {result.author}</div>
+            </div>
+            <p>{result.description}</p>
           </div>
 
           {!onDeleteClick && <DialogButton
