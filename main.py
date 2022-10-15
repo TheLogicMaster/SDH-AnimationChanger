@@ -214,7 +214,7 @@ def find_cached_animation(anim_id):
 
 def apply_animation(video, anim_id):
     override_path = f'{OVERRIDE_PATH}/{video}'
-    if os.path.islink(override_path):
+    if os.path.islink(override_path) or os.path.exists(override_path):
         os.remove(override_path)
 
     if anim_id == '':
