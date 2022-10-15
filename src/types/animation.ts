@@ -1,4 +1,4 @@
-import { ServerAPI } from 'decky-frontend-lib';
+import { ServerAPI, DropdownOption } from 'decky-frontend-lib';
 import { Moment } from 'moment';
 
 export interface IRepoResult extends Animation  {
@@ -79,3 +79,41 @@ export type AnimationContextType = {
 export interface AnimationProviderType {
   serverAPI: ServerAPI;
 }
+
+export const sortOptions: DropdownOption[] = [
+  {
+    label: 'Newest',
+    data: RepoSort.Newest
+  },
+  {
+    label: 'Oldest',
+    data: RepoSort.Oldest
+  },
+  {
+    label: 'Alphbetical',
+    data: RepoSort.Alpha
+  },
+  {
+    label: 'Most Popular',
+    data: RepoSort.Downloads
+  },
+  {
+    label: 'Most Liked',
+    data: RepoSort.Likes
+  }
+];
+
+export const targetOptions: DropdownOption[] = [
+  {
+    label: 'All',
+    data: TargetType.All
+  },
+  {
+    label: 'Boot',
+    data: TargetType.Boot
+  },
+  {
+    label: 'Suspend',
+    data: TargetType.Suspend
+  }
+];

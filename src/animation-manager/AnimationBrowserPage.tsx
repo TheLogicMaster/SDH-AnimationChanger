@@ -20,7 +20,7 @@ import {
 import RepoResultCard from '../components/RepoResultCard';
 import RepoResultModal from '../components/RepoResultModal';
 
-import { RepoSort, TargetType } from '../types/animation';
+import { RepoSort, TargetType, sortOptions, targetOptions } from '../types/animation';
 
 import { useAnimationContext } from '../state';
 
@@ -118,44 +118,6 @@ export const AnimationBrowserPage: FC = () => {
     forceUpdate();
     
   }, [query, loading, repoSort, targetType]);
-
-  const sortOptions: DropdownOption[] = [
-    {
-      label: 'Newest',
-      data: RepoSort.Newest
-    },
-    {
-      label: 'Oldest',
-      data: RepoSort.Oldest
-    },
-    {
-      label: 'Alphbetical',
-      data: RepoSort.Alpha
-    },
-    {
-      label: 'Most Popular',
-      data: RepoSort.Downloads
-    },
-    {
-      label: 'Most Liked',
-      data: RepoSort.Likes
-    }
-  ];
-
-  const targetOptions: DropdownOption[] = [
-    {
-      label: 'All',
-      data: TargetType.All
-    },
-    {
-      label: 'Boot',
-      data: TargetType.Boot
-    },
-    {
-      label: 'Suspend',
-      data: TargetType.Suspend
-    }
-  ];
 
   if(loading) {
     return (

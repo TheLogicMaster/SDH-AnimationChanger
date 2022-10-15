@@ -7,22 +7,6 @@ export const AboutPage: FC = () => {
       <h2
         style={{ fontWeight: "bold", fontSize: "1.5em", marginBottom: "0px" }}
       >
-        Animation Changer
-      </h2>
-      <p>
-        For more information about Animation Changer including how to manually install animations, please see the README.
-      </p>
-      <DialogButton
-      style={{width: 300}}
-      onClick={() => {
-        Router.NavigateToExternalWeb('https://github.com/TheLogicMaster/SDH-AnimationChanger/blob/main/README.md');
-      }}
-      >
-        View README
-      </DialogButton>
-      <h2
-        style={{ fontWeight: "bold", fontSize: "1.5em", marginBottom: "0px" }}
-      >
         Developers
       </h2>
       <ul style={{ marginTop: "0px", marginBottom: "0px" }}>
@@ -56,6 +40,22 @@ export const AboutPage: FC = () => {
         <br />
         discord.gg/ZU74G2NJzk
       </span>
+      <h2
+        style={{ fontWeight: "bold", fontSize: "1.5em", marginBottom: "0px" }}
+      >
+        More Info
+      </h2>
+      <p>
+        For more information about Animation Changer including how to manually install animations, please see the README.
+      </p>
+      <DialogButton
+      style={{width: 300}}
+      onClick={() => {
+        Router.NavigateToExternalWeb('https://github.com/TheLogicMaster/SDH-AnimationChanger/blob/main/README.md');
+      }}
+      >
+        View README
+      </DialogButton>
     </Focusable>
   );
 };
