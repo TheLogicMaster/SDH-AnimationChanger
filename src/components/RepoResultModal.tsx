@@ -34,20 +34,23 @@ const RepoResultModal: FC<ModalRootProps & {
   return (
     <EmptyModal {...props}>
       <div style={{display: 'flex', flexDirection: 'row'}}>
-        <div style={{flex: 1}}>
+
+        <div style={{width: '50%'}}>
           <video style={{width: '100%', height: 'auto'}} poster={result.preview_image} autoPlay={true} controls={true}>
             <source src={result.preview_video} type="video/mp4" />
             <source src={result.download_url} type="video/webm" />
           </video>
         </div>
 
-        <div style={{display: 'flex', flex: 1, flexDirection: 'column', paddingLeft: '15px'}}>
+        <div style={{display: 'flex', width: '50%', flexDirection: 'column', paddingLeft: '15px'}}>
           <div style={{flex: 1}}>
             <h3 style={{margin: 0}}>{result.name}</h3>
             <div className={GameIconAndName}>
               <div className={GameName}>Uploaded by {result.author}</div>
             </div>
-            <p>{result.description}</p>
+            <p style={{overflowWrap: 'break-word', wordWrap: 'break-word', fontSize: '0.8em'}}>
+              {result.description}
+            </p>
           </div>
 
           {!onDeleteClick && <DialogButton
