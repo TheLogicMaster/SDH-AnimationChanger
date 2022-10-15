@@ -38,6 +38,7 @@ const RepoResultModal: FC<ModalRootProps & {
         <div style={{display: 'flex', flex: 1, flexDirection: 'column', paddingLeft: '15px'}}>
           <div style={{flex: 1}}>
             <h3 style={{margin: 0}}>{result.name}</h3>
+            <p>{result.description}</p>
             <p>Uploaded by {result.author}</p>
           </div>
 

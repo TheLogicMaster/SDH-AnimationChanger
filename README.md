@@ -2,7 +2,7 @@
 This is a Steam Deck Homebrew plugin for easily changing boot/suspend animations and randomizing
 on boot.
 
-![screenshot](./assets/screenshot.jpg)
+![screenshot](./assets/screenshot.png)
 
 ## Plugin Usage
 Use the plugin's animations browser to automatically browser and install animations from
