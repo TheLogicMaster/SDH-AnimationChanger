@@ -131,14 +131,14 @@ export const InstalledAnimationsPage: FC = () => {
         key={`${result.id}-${index}`}
         result={result}
         onActivate={async () => {
-
-          const response = await showModal(
+          showModal(
             <RepoResultModal
             result={result}
             isDownloaded={true}
             onDeleteClick={async () => {
               await deleteAnimation(result.id);
-            }} />
+            }} />,
+            window
           );
         }} />)}
 

@@ -188,7 +188,8 @@ export const AnimationBrowserPage: FC = () => {
             <RepoResultModal
             onDownloadClick={async () => { return downloadAnimation(result.id) }}
             result={result}
-            isDownloaded={downloadedAnimations.find(animation => animation.id == result.id) != null} />
+            isDownloaded={downloadedAnimations.find(animation => animation.id == result.id) != null} />,
+            window
           );
         }} />)}
 
