@@ -42,46 +42,38 @@ unloaded = False
 
 async def get_steamdeckrepo():
     try:
-        animations = []
-        page = 1
-        while True:
-            for _ in range(REQUEST_RETRIES):
-                if unloaded:
-                    return []
-                async with ClientSession(connector=TCPConnector(family=socket.AF_INET) if config['force_ipv4'] else None) as web:
-                    async with web.request(
-                            'get',
-                            f'https://steamdeckrepo.com/api/posts?page={page}',
-                            ssl=ssl_ctx
-                    ) as res:
-                        if res.status == 200:
-                            data = (await res.json())['posts']
-                            break
-                        if res.status == 429:
-                            raise Exception('Rate limit exceeded, try again in a minute')
-                        logger.warning(f'steamdeckrepo fetch failed, status={res.status}')
-            else:
-                raise Exception('Failed to fetch steamdeckrepo')
-            if len(data) == 0:
-                break
-            animations += [{
-                'id': entry['id'],
-                'name': entry['title'],
-                'preview_image': entry['thumbnail'],
-                'preview_video': entry['video'],
-                'author': entry['user']['steam_name'],
-                'description': entry['content'],
-                'last_changed': entry['updated_at'],  # Todo: Ensure consistent date format
-                'source': entry['url'],
-                'download_url': 'https://steamdeckrepo.com/post/download/' + entry['id'],
-                'likes': entry['likes'],
-                'downloads': entry['downloads'],
-                'version': '',
-                'target': 'suspend' if entry['type'] == 'suspend_video' else 'boot',
-                'manifest_version': 1
-            } for entry in data if entry['type'] in ['suspend_video', 'boot_video']]
-            page += 1
-        return animations
+        for _ in range(REQUEST_RETRIES):
+            async with ClientSession(connector=TCPConnector(family=socket.AF_INET) if config['force_ipv4'] else None) as web:
+                async with web.request(
+                        'get',
+                        f'https://steamdeckrepo.com/api/posts/all',
+                        ssl=ssl_ctx
+                ) as res:
+                    if res.status == 200:
+                        data = (await res.json())['posts']
+                        break
+                    status = res.status
+                    if res.status == 429:
+                        raise Exception('Rate limit exceeded, try again in a minute')
+                    logger.warning(f'steamdeckrepo fetch failed, status={res.status}')
+        else:
+            raise Exception(f'Retry attempts exceeded, status code: {status}')
+        return [{
+            'id': entry['id'],
+            'name': entry['title'],
+            'preview_image': entry['thumbnail'],
+            'preview_video': entry['video'],
+            'author': entry['user']['steam_name'],
+            'description': entry['content'],
+            'last_changed': entry['updated_at'],  # Todo: Ensure consistent date format
+            'source': entry['url'],
+            'download_url': 'https://steamdeckrepo.com/post/download/' + entry['id'],
+            'likes': entry['likes'],
+            'downloads': entry['downloads'],
+            'version': '',
+            'target': 'suspend' if entry['type'] == 'suspend_video' else 'boot',
+            'manifest_version': 1
+        } for entry in data if entry['type'] in ['suspend_video', 'boot_video']]
     except Exception as e:
         logger.error('Failed to fetch steamdeckrepo', exc_info=e)
         raise e
@@ -422,7 +414,9 @@ class Plugin:
         except:
             ...
 
-        await asyncio.sleep(5.0)  # Ensure plugin doesn't hit rate limits due to multiple reloads
+        await asyncio.sleep(5.0)
+        if unloaded:
+            return
         try:
             await update_cache()
         except:
