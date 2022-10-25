@@ -140,6 +140,14 @@ const Content: FC = () => {
                 </PanelSectionRow>
 
                 <PanelSectionRow>
+                    <ToggleField
+                    label='Force IPv4'
+                    onChange={(checked) => { saveSettings({ ...settings, force_ipv4: checked }) }}
+                    checked={settings.force_ipv4}
+                    />
+                </PanelSectionRow>
+
+                <PanelSectionRow>
                     <ButtonItem
                     layout="below"
                     onClick={reloadConfig}

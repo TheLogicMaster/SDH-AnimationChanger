@@ -1,11 +1,13 @@
+import asyncio
 import json
 import logging
 import os
 import random
+import socket
 import ssl
 import aiohttp
 import certifi
-from aiohttp import ClientSession
+from aiohttp import ClientSession, TCPConnector
 
 CONFIG_PATH = '/home/deck/.config/AnimationChanger/config.json'
 ANIMATIONS_PATH = '/home/deck/homebrew/animations'
@@ -24,7 +26,7 @@ REQUEST_RETRIES = 5
 
 logging.basicConfig(filename="/tmp/animation_changer.log",
                     format='[Animation Changer] %(asctime)s %(levelname)s %(message)s',
-                    filemode='w+',
+                    filemode='a',
                     force=True)
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -35,6 +37,7 @@ config = {}
 local_animations = []
 local_sets = []
 animation_cache = []
+unloaded = False
 
 
 async def get_steamdeckrepo():
@@ -43,7 +46,9 @@ async def get_steamdeckrepo():
         page = 1
         while True:
             for _ in range(REQUEST_RETRIES):
-                async with ClientSession() as web:
+                if unloaded:
+                    return []
+                async with ClientSession(connector=TCPConnector(family=socket.AF_INET) if config['force_ipv4'] else None) as web:
                     async with web.request(
                             'get',
                             f'https://steamdeckrepo.com/api/posts?page={page}',
@@ -52,7 +57,9 @@ async def get_steamdeckrepo():
                         if res.status == 200:
                             data = (await res.json())['posts']
                             break
-                        logger.warning('steamdeckrepo fetch failed, retrying')
+                        if res.status == 429:
+                            raise Exception('Rate limit exceeded, try again in a minute')
+                        logger.warning(f'steamdeckrepo fetch failed, status={res.status}')
             else:
                 raise Exception('Failed to fetch steamdeckrepo')
             if len(data) == 0:
@@ -61,7 +68,7 @@ async def get_steamdeckrepo():
                 'id': entry['id'],
                 'name': entry['title'],
                 'preview_image': entry['thumbnail'],
-                'preview_video': entry['video_preview'],
+                'preview_video': entry['video'],
                 'author': entry['user']['steam_name'],
                 'description': entry['content'],
                 'last_changed': entry['updated_at'],  # Todo: Ensure consistent date format
@@ -116,6 +123,7 @@ async def load_config():
         'custom_animations': [],
         'custom_sets': [],
         'shuffle_exclusions': [],
+        'force_ipv4': False
     }
 
     async def save_new():
@@ -296,7 +304,8 @@ class Plugin:
                 'boot': config['boot'],
                 'suspend': config['suspend'],
                 'throbber': config['throbber'],
-                'shuffle_exclusions': config['shuffle_exclusions']
+                'shuffle_exclusions': config['shuffle_exclusions'],
+                'force_ipv4': config['force_ipv4']
             }
         }
 
@@ -353,7 +362,7 @@ class Plugin:
         for entry in config['downloads']:
             if entry['id'] == anim_id:
                 return
-        async with aiohttp.ClientSession() as web:
+        async with aiohttp.ClientSession(connector=TCPConnector(family=socket.AF_INET) if config['force_ipv4'] else None) as web:
             if (anim := find_cached_animation(anim_id)) is None:
                 raise_and_log(f'Failed to find cached animation with id: {id}')
             async with web.get(anim['download_url'], ssl=ssl_ctx) as response:
@@ -413,9 +422,15 @@ class Plugin:
         except:
             ...
 
+        await asyncio.sleep(5.0)  # Ensure plugin doesn't hit rate limits due to multiple reloads
         try:
             await update_cache()
         except:
             ...
 
         logger.info('Initialized')
+
+    async def _unload(self):
+        global unloaded
+        unloaded = True
+        logger.info('Unloaded')

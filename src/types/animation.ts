@@ -23,6 +23,7 @@ export interface PluginSettings {
   boot: String;
   suspend: String;
   throbber: String;
+  force_ipv4: boolean;
 }
 
 export interface Animation {
