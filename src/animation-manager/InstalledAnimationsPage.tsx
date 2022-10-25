@@ -125,20 +125,20 @@ export const InstalledAnimationsPage: FC = () => {
       
       </Focusable>
 
-      <Focusable style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gridAutoRows: '1fr', columnGap: '15px' }}>
+      <Focusable style={{ minWidth: 0, display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gridAutoRows: '1fr', columnGap: '15px' }}>
 
         {filteredAnimations.map((result, index) => <RepoResultCard
         key={`${result.id}-${index}`}
         result={result}
         onActivate={async () => {
-
-          const response = await showModal(
+          showModal(
             <RepoResultModal
             result={result}
             isDownloaded={true}
             onDeleteClick={async () => {
               await deleteAnimation(result.id);
-            }} />
+            }} />,
+            window
           );
         }} />)}
 

@@ -66,7 +66,7 @@ async def get_steamdeckrepo():
                 'description': entry['content'],
                 'last_changed': entry['updated_at'],  # Todo: Ensure consistent date format
                 'source': entry['url'],
-                'download_url': entry['video'],
+                'download_url': 'https://steamdeckrepo.com/post/download/' + entry['id'],
                 'likes': entry['likes'],
                 'downloads': entry['downloads'],
                 'version': '',

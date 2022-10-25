@@ -9,7 +9,6 @@ import {
     DropdownOption,
     Tabs,
     Router,
-    useQuickAccessVisible,
     ToggleField,
     findModule
 } from "decky-frontend-lib";
@@ -28,14 +27,14 @@ import {
 const Content: FC = () => {
 
     const { allAnimations, settings, saveSettings, loadBackendState, lastSync, reloadConfig, shuffle } = useAnimationContext();
-    const qamVisible = useQuickAccessVisible();
 
     const [ bootAnimationOptions, setBootAnimationOptions ] = useState<DropdownOption[]>([]);
     const [ suspendAnimationOptions, setSuspendAnimationOptions ] = useState<DropdownOption[]>([]);
-    
+
+    // Removed QAM Visible hook due to crash
     useEffect(() => {
         loadBackendState();
-    }, [ qamVisible ]);
+    }, []);
 
     useEffect(() => {
 
@@ -68,7 +67,7 @@ const Content: FC = () => {
         
         setSuspendAnimationOptions(suspendOptions);
 
-    }, [ qamVisible, lastSync ]);
+    }, [ lastSync ]);
 
     return (
         <>
@@ -178,7 +177,6 @@ const AnimationManagerRouter: FC = () => {
             }}
         >
             <Tabs
-            title="Animation Manager"
             activeTab={currentTabRoute}
             // @ts-ignore
             onShowTab={(tabID: string) => {
