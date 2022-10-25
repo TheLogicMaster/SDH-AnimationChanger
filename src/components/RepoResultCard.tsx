@@ -29,6 +29,8 @@ const RepoResultCard: FC<{ result: IRepoResult, onActivate: () => void }> = ({ r
 
     <div className='Panel' style={{
       margin: 0,
+      minWidth: 0,
+      overflow: 'hidden'
     }}>
 
       <div
@@ -74,9 +76,9 @@ const RepoResultCard: FC<{ result: IRepoResult, onActivate: () => void }> = ({ r
                 <div className={ShortDateAndTime}>{result.relative_date}</div>
               </Focusable>
             </div>
-            <div className={Title}>{result.name}</div>
+            <div className={Title} style={{overflowWrap: 'break-word', wordWrap: 'break-word', width: '100%'}}>{result.name}</div>
             <div className={GameIconAndName}>
-              <div className={GameName}>{result.author}</div>
+              <div className={GameName} style={{overflowWrap: 'break-word', wordWrap: 'break-word', width: '100%'}}>{result.author}</div>
             </div>
           </div>
 

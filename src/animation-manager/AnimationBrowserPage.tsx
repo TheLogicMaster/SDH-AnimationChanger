@@ -178,7 +178,7 @@ export const AnimationBrowserPage: FC = () => {
 
       </Focusable>
       
-      <Focusable style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gridAutoRows: '1fr', columnGap: '15px' }}>
+      <Focusable style={{ minWidth: 0, display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gridAutoRows: '1fr', columnGap: '15px' }}>
 
         {filteredResults.map((result, index) => <RepoResultCard
         key={`${result.id}-${index}`}
