@@ -14,7 +14,8 @@ import {
   showModal,
   Spinner,
   TextField,
-  DialogButton
+  DialogButton,
+  findSP
 } from 'decky-frontend-lib';
 
 import RepoResultCard from '../components/RepoResultCard';
@@ -189,7 +190,7 @@ export const AnimationBrowserPage: FC = () => {
             onDownloadClick={async () => { return downloadAnimation(result.id) }}
             result={result}
             isDownloaded={downloadedAnimations.find(animation => animation.id == result.id) != null} />,
-            window
+            findSP()
           );
         }} />)}
 

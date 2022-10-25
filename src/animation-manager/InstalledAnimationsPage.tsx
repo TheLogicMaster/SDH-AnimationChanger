@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, FC, FormEvent } from "react";
 import { useAnimationContext } from "../state";
-import { Focusable, showModal, TextField, Dropdown } from "decky-frontend-lib";
+import {Focusable, showModal, TextField, Dropdown, findSP} from "decky-frontend-lib";
 import { RepoSort, TargetType, sortOptions, targetOptions } from '../types/animation';
 
 import RepoResultCard from '../components/RepoResultCard';
@@ -138,7 +138,7 @@ export const InstalledAnimationsPage: FC = () => {
             onDeleteClick={async () => {
               await deleteAnimation(result.id);
             }} />,
-            window
+            findSP()
           );
         }} />)}
 
