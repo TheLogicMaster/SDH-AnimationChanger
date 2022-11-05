@@ -1,6 +1,5 @@
 import { FC, useState } from 'react';
-import { Focusable, ModalRootProps, DialogButton, FocusRing } from 'decky-frontend-lib';
-import EmptyModal from "./EmptyModal";
+import { ModalRoot, ModalRootProps, DialogButton } from 'decky-frontend-lib';
 import RepoResult from '../models/RepoResult';
 import ExtractedClasses from '../utils/ExtractedClasses';
 
@@ -32,7 +31,7 @@ const RepoResultModal: FC<ModalRootProps & {
   } = ExtractedClasses.getInstance().found;
 
   return (
-    <EmptyModal {...props}>
+    <ModalRoot {...props}>
       <div style={{display: 'flex', flexDirection: 'row'}}>
 
         <div style={{width: '50%'}}>
@@ -68,7 +67,7 @@ const RepoResultModal: FC<ModalRootProps & {
           </DialogButton>}
         </div>
       </div>
-    </EmptyModal>
+    </ModalRoot>
   )
 
 }
