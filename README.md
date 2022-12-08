@@ -9,6 +9,10 @@ Use the plugin's animations browser to automatically browser and install animati
 [SteamDeckRepo](https://steamdeckrepo.com/). For now, only boot animations are available automatically. 
 From the quick access menu, you can switch between animations or enable randomization on boot.
 
+## Fullscreen Suspend Animations
+To get support for fullscreen suspend animations, check out the 
+[CssLoader](https://github.com/suchmememanyskill/SDH-CssLoader) plugin with the `Full Suspend` theme.
+
 ## Manual Usage
 This plugin looks in `~/homebrew/animations` for directories containing sets of webm animation videos.
 For example, directory `~/homebrew/animations/Test`, which could contain any or all of the three 
