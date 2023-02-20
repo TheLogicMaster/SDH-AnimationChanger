@@ -91,7 +91,7 @@ export const sortOptions: DropdownOption[] = [
     data: RepoSort.Oldest
   },
   {
-    label: 'Alphbetical',
+    label: 'Alphabetical',
     data: RepoSort.Alpha
   },
   {
