@@ -1,4 +1,4 @@
-import { DialogButton, Router, Focusable } from "decky-frontend-lib";
+import {DialogButton, Focusable, Navigation} from "decky-frontend-lib";
 import { FC } from "react";
 
 export const AboutPage: FC = () => {
@@ -51,7 +51,7 @@ export const AboutPage: FC = () => {
       <DialogButton
       style={{width: 300}}
       onClick={() => {
-        Router.NavigateToExternalWeb('https://github.com/TheLogicMaster/SDH-AnimationChanger/blob/main/README.md');
+        Navigation.NavigateToExternalWeb('https://github.com/TheLogicMaster/SDH-AnimationChanger/blob/main/README.md');
       }}
       >
         View README
