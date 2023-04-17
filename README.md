@@ -8,6 +8,8 @@ on boot.
 Use the plugin's animations browser to automatically browser and install animations from
 [SteamDeckRepo](https://steamdeckrepo.com/). For now, only boot animations are available automatically. 
 From the quick access menu, you can switch between animations or enable randomization on boot.
+Ensure that the Startup Movie is set to `deck_startup.web` in the Settings Customization tab for
+the custom animation to take effect.
 
 ## Fullscreen Suspend Animations
 To get support for fullscreen suspend animations, check out the 

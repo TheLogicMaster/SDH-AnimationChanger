@@ -10,7 +10,6 @@ import {
 import {
   Focusable,
   Dropdown,
-  DropdownOption,
   showModal,
   Spinner,
   TextField,
@@ -26,7 +25,9 @@ import { RepoSort, TargetType, sortOptions, targetOptions } from '../types/anima
 import { useAnimationContext } from '../state';
 
 export const AnimationBrowserPage: FC = () => {
-  
+
+  const PAGE_SIZE = 30;
+
   const {
     searchRepo,
     repoResults,
@@ -37,12 +38,15 @@ export const AnimationBrowserPage: FC = () => {
     downloadAnimation,
     downloadedAnimations
   } = useAnimationContext();
-  
+
   const [ query, setQuery ] = useState<string>('');
   const [ loading, setLoading ] = useState(repoResults.length === 0);
   const [ filteredResults, setFilteredResults ] = useState(repoResults);
+  const [ displayCount, setDisplayCount ] = useState(PAGE_SIZE);
   const [ ignored, forceUpdate ] = useReducer(x => x + 1, 0);
   const searchField = useRef<any>();
+  const loadMoreRef = useRef<any>();
+  const loadMoreObserverRef = useRef<any>(null);
 
   const loadResults = async () => {
     await searchRepo();
@@ -69,7 +73,7 @@ export const AnimationBrowserPage: FC = () => {
   }, []);
 
   useEffect(() => {
-  
+
     if(!repoResults || loading) return;
 
     let filtered = repoResults;
@@ -115,11 +119,27 @@ export const AnimationBrowserPage: FC = () => {
         break;
     }
 
+    setDisplayCount(PAGE_SIZE);
     setFilteredResults(filtered);
     forceUpdate();
-    
+
   }, [query, loading, repoSort, targetType]);
 
+  useEffect(() => {
+    if (loadMoreObserverRef.current)
+      loadMoreObserverRef.current.disconnect()
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && displayCount < filteredResults.length)
+          setDisplayCount(displayCount + PAGE_SIZE)
+      },
+    );
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current)
+      loadMoreObserverRef.current = observer
+    }
+  }, [loadMoreRef.current, displayCount])
+  
   if(loading) {
     return (
       <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%'}}>
@@ -178,10 +198,10 @@ export const AnimationBrowserPage: FC = () => {
         </DialogButton>
 
       </Focusable>
-      
+
       <Focusable style={{ minWidth: 0, display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gridAutoRows: '1fr', columnGap: '15px' }}>
 
-        {filteredResults.map((result, index) => <RepoResultCard
+        {filteredResults.slice(0, displayCount).map((result, index) => <RepoResultCard
         key={`${result.id}-${index}`}
         result={result}
         onActivate={() => {
@@ -195,8 +215,9 @@ export const AnimationBrowserPage: FC = () => {
         }} />)}
 
       </Focusable>
-        
+
+      <div ref={loadMoreRef}></div>
+
     </div>
   );
 };
-  

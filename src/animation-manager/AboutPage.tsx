@@ -7,6 +7,18 @@ export const AboutPage: FC = () => {
       <h2
         style={{ fontWeight: "bold", fontSize: "1.5em", marginBottom: "0px" }}
       >
+        Info
+      </h2>
+      <span>
+        Ensure that the Startup Movie is set to deck_startup.web in the Settings Customization tab.
+        <br/>
+        Select animations in the quick access menu and they should immediately take effect.
+        <br/>
+        A restart may be needed to switch back to stock, or use the Settings Customization menu.
+      </span>
+      <h2
+        style={{ fontWeight: "bold", fontSize: "1.5em", marginBottom: "0px" }}
+      >
         Developers
       </h2>
       <ul style={{ marginTop: "0px", marginBottom: "0px" }}>
