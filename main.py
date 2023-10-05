@@ -9,10 +9,10 @@ import aiohttp
 import certifi
 from aiohttp import ClientSession, TCPConnector
 
-CONFIG_PATH = '/home/deck/.config/AnimationChanger/config.json'
-ANIMATIONS_PATH = '/home/deck/homebrew/animations'
-OVERRIDE_PATH = '/home/deck/.steam/root/config/uioverrides/movies'
-DOWNLOADS_PATH = '/home/deck/.config/AnimationChanger/downloads'
+CONFIG_PATH = os.path.expanduser('~/.config/AnimationChanger/config.json')
+ANIMATIONS_PATH = os.path.expanduser('~/homebrew/animations')
+OVERRIDE_PATH = os.path.expanduser('~/.steam/root/config/uioverrides/movies')
+DOWNLOADS_PATH = os.path.expanduser('~/.config/AnimationChanger/downloads')
 
 BOOT_VIDEO = 'deck_startup.webm'
 SUSPEND_VIDEO = 'deck-suspend-animation.webm'
