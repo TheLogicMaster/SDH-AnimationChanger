@@ -8,11 +8,12 @@ import ssl
 import aiohttp
 import certifi
 from aiohttp import ClientSession, TCPConnector
+import decky_plugin
 
-CONFIG_PATH = os.path.expanduser('~/.config/AnimationChanger/config.json')
-ANIMATIONS_PATH = os.path.expanduser('~/homebrew/animations')
+CONFIG_PATH = os.path.join(decky_plugin.DECKY_PLUGIN_SETTINGS_DIR, 'config.json')
+ANIMATIONS_PATH = os.path.join(decky_plugin.DECKY_PLUGIN_RUNTIME_DIR, 'animations')
+DOWNLOADS_PATH = os.path.join(decky_plugin.DECKY_PLUGIN_RUNTIME_DIR, 'downloads')
 OVERRIDE_PATH = os.path.expanduser('~/.steam/root/config/uioverrides/movies')
-DOWNLOADS_PATH = os.path.expanduser('~/.config/AnimationChanger/downloads')
 
 BOOT_VIDEO = 'deck_startup.webm'
 SUSPEND_VIDEO = 'deck-suspend-animation.webm'
@@ -23,13 +24,6 @@ VIDEO_TYPES = ['boot', 'suspend', 'throbber']
 VIDEO_TARGETS = ['boot', 'suspend', 'suspend']
 
 REQUEST_RETRIES = 5
-
-logging.basicConfig(filename="/tmp/animation_changer.log",
-                    format='[Animation Changer] %(asctime)s %(levelname)s %(message)s',
-                    filemode='a',
-                    force=True)
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
 
 ssl_ctx = ssl.create_default_context(cafile=certifi.where())
 
@@ -55,7 +49,7 @@ async def get_steamdeckrepo():
                     status = res.status
                     if res.status == 429:
                         raise Exception('Rate limit exceeded, try again in a minute')
-                    logger.warning(f'steamdeckrepo fetch failed, status={res.status}')
+                    decky_plugin.logger.warning(f'steamdeckrepo fetch failed, status={res.status}')
         else:
             raise Exception(f'Retry attempts exceeded, status code: {status}')
         return [{
@@ -75,7 +69,7 @@ async def get_steamdeckrepo():
             'manifest_version': 1
         } for entry in data if entry['type'] in ['suspend_video', 'boot_video']]
     except Exception as e:
-        logger.error('Failed to fetch steamdeckrepo', exc_info=e)
+        decky_plugin.logger.error('Failed to fetch steamdeckrepo', exc_info=e)
         raise e
 
 
@@ -99,7 +93,7 @@ async def regenerate_downloads():
                 downloads.append(anim)
                 break
         else:
-            logger.error(f'Failed to find cached entry for id: {anim_id}')
+            decky_plugin.logger.error(f'Failed to find cached entry for id: {anim_id}')
     config['downloads'] = downloads
 
 
@@ -123,7 +117,7 @@ async def load_config():
             await regenerate_downloads()
             save_config()
         except Exception as ex:
-            logger.error('Failed to save new config', exc_info=ex)
+            decky_plugin.logger.error('Failed to save new config', exc_info=ex)
 
     if os.path.exists(CONFIG_PATH):
         try:
@@ -132,14 +126,14 @@ async def load_config():
                 if type(config['randomize']) == bool:
                     config['randomize'] = ''
         except Exception as e:
-            logger.error('Failed to load config', exc_info=e)
+            decky_plugin.logger.error('Failed to load config', exc_info=e)
             await save_new()
     else:
         await save_new()
 
 
 def raise_and_log(msg, ex=None):
-    logger.error(msg, exc_info=ex)
+    decky_plugin.logger.error(msg, exc_info=ex)
     if ex is None:
         raise Exception(msg)
     raise ex
@@ -170,7 +164,7 @@ def load_local_animations():
                     anim_config = json.load(f)
                 is_set = True
             except Exception as e:
-                logger.warning(f'Failed to parse config.json for: {directory}', exc_info=e)
+                decky_plugin.logger.warning(f'Failed to parse config.json for: {directory}', exc_info=e)
         else:
             for video in [BOOT_VIDEO, SUSPEND_VIDEO, THROBBER_VIDEO]:
                 if os.path.exists(f'{ANIMATIONS_PATH}/{directory}/{video}'):
@@ -394,7 +388,7 @@ class Plugin:
         apply_animations()
 
     async def _main(self):
-        logger.info('Initializing...')
+        decky_plugin.logger.info('Initializing...')
 
         os.makedirs(ANIMATIONS_PATH, exist_ok=True)
         os.makedirs(OVERRIDE_PATH, exist_ok=True)
@@ -422,9 +416,20 @@ class Plugin:
         except:
             ...
 
-        logger.info('Initialized')
+        decky_plugin.logger.info('Initialized')
 
     async def _unload(self):
         global unloaded
         unloaded = True
-        logger.info('Unloaded')
+        decky_plugin.logger.info('Unloaded')
+
+    async def _migration(self):
+        decky_plugin.logger.info('Migrating')
+        # `/tmp/animation_changer.log` will be migrated to `decky_plugin.DECKY_PLUGIN_LOG_DIR/template.log`
+        decky_plugin.migrate_logs('/tmp/animation_changer.log')
+        # `~/.config/AnimationChanger/config.json` will be migrated to `decky_plugin.DECKY_PLUGIN_SETTINGS_DIR/config.json`
+        decky_plugin.migrate_settings(os.path.expanduser('~/.config/AnimationChanger/config.json'))
+        # `~/homebrew/animations` will be migrated to `decky_plugin.DECKY_PLUGIN_RUNTIME_DIR/animations/`
+        decky_plugin.migrate_any(ANIMATIONS_PATH, os.path.expanduser('~/homebrew/animations'))
+        # `~/.config/AnimationChanger/downloads` will be migrated to `decky_plugin.DECKY_PLUGIN_RUNTIME_DIR/downloads/`
+        decky_plugin.migrate_any(DOWNLOADS_PATH, os.path.expanduser('~/.config/AnimationChanger/downloads'))
