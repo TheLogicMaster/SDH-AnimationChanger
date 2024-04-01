@@ -1,9 +1,13 @@
 lockfileVersion: '6.0'
 
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
 dependencies:
   decky-frontend-lib:
-    specifier: ^3.20.5
-    version: 3.20.5
+    specifier: ^3.25.0
+    version: 3.25.0
   moment:
     specifier: ^2.29.4
     version: 2.29.4
@@ -433,8 +437,8 @@ packages:
     resolution: {integrity: sha512-DJR/VvkAvSZW9bTouZue2sSxDwdTN92uHjqeKVm+0dAqdfNykRzQ95tay8aXMBAAPpUiq4Qcug2L7neoRh2Egw==}
     dev: true
 
-  /decky-frontend-lib@3.20.5:
-    resolution: {integrity: sha512-aXllFYhWovoiyBHNzH8PW9EYgXotY9ysuU9icFNgrOWFotyJV+2KGLnfYEyBlDNiexKvXKVRKPw1gRFX2hP4AQ==}
+  /decky-frontend-lib@3.25.0:
+    resolution: {integrity: sha512-2lBoHS2AIRmuluq/bGdHBz+uyToQE7k3K/vDq1MQbDZ4eC+8CGDuh2T8yZOj3D0yjGP2MdikNNAWPA9Z5l2qDg==}
     dev: false
 
   /deepmerge@4.2.2:
