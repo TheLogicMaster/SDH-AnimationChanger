@@ -1,6 +1,6 @@
 {
   "name": "decky-animation-changer",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "A boot/suspend animation management plugin.",
   "scripts": {
     "build": "shx rm -rf dist && rollup -c",

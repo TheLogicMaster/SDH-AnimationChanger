@@ -284,143 +284,213 @@ class Plugin:
 
     async def getState(self):
         """ Get backend state (animations, sets, and settings) """
-        return {
-            'local_animations': local_animations,
-            'custom_animations': config['custom_animations'],
-            'downloaded_animations': config['downloads'],
-            'local_sets': local_sets,
-            'custom_sets': config['custom_sets'],
-            'settings': {
-                'randomize': config['randomize'],
-                'current_set': config['current_set'],
-                'boot': config['boot'],
-                'suspend': config['suspend'],
-                'throbber': config['throbber'],
-                'shuffle_exclusions': config['shuffle_exclusions'],
-                'force_ipv4': config['force_ipv4']
+        try:
+            return {
+                'local_animations': local_animations,
+                'custom_animations': config['custom_animations'],
+                'downloaded_animations': config['downloads'],
+                'local_sets': local_sets,
+                'custom_sets': config['custom_sets'],
+                'settings': {
+                    'randomize': config['randomize'],
+                    'current_set': config['current_set'],
+                    'boot': config['boot'],
+                    'suspend': config['suspend'],
+                    'throbber': config['throbber'],
+                    'shuffle_exclusions': config['shuffle_exclusions'],
+                    'force_ipv4': config['force_ipv4']
+                }
             }
-        }
+        except Exception as e:
+            logger.error('Failed to get state', exc_info=e)
+            raise e
 
     async def saveCustomSet(self, set_entry):
         """ Save custom set entry """
-        remove_custom_set(set_entry['id'])
-        config['custom_sets'].append(set_entry)
-        save_config()
+        try:
+            remove_custom_set(set_entry['id'])
+            config['custom_sets'].append(set_entry)
+            save_config()
+        except Exception as e:
+            logger.error('Failed to save custom set', exc_info=e)
+            raise e
 
     async def removeCustomSet(self, set_id):
         """ Remove custom set """
-        remove_custom_set(set_id)
-        save_config()
+        try:
+            remove_custom_set(set_id)
+            save_config()
+        except Exception as e:
+            logger.error('Failed to remove custom set', exc_info=e)
+            raise e
 
     async def enableSet(self, set_id, enable):
         """ Enable or disable set """
-        for entry in local_sets:
-            if entry['id'] == set_id:
-                entry['enable'] = enable
-                with open(f'{ANIMATIONS_PATH}/{entry["name"]}/config.json', 'w') as f:
-                    json.dump(entry, f)
-                return
-        for entry in config['custom_sets']:
-            if entry['id'] == set_id:
-                entry['enable'] = enable
-                save_config()
-                break
+        try:
+            for entry in local_sets:
+                if entry['id'] == set_id:
+                    entry['enable'] = enable
+                    with open(f'{ANIMATIONS_PATH}/{entry["name"]}/config.json', 'w') as f:
+                        json.dump(entry, f)
+                    return
+            for entry in config['custom_sets']:
+                if entry['id'] == set_id:
+                    entry['enable'] = enable
+                    save_config()
+                    break
+        except Exception as e:
+            logger.error('Failed to enable set', exc_info=e)
+            raise e
 
     async def saveCustomAnimation(self, anim_entry):
         """ Save a custom animation entry """
-        remove_custom_animation(anim_entry['id'])
-        config['custom_animations'].append(anim_entry)
-        save_config()
+        try:
+            remove_custom_animation(anim_entry['id'])
+            config['custom_animations'].append(anim_entry)
+            save_config()
+        except Exception as e:
+            logger.error('Failed to save custom animation', exc_info=e)
+            raise e
 
     async def removeCustomAnimation(self, anim_id):
         """ Removes custom animation with name """
-        remove_custom_animation(anim_id)
-        save_config()
+        try:
+            remove_custom_animation(anim_id)
+            save_config()
+        except Exception as e:
+            logger.error('Failed to remove custom animation', exc_info=e)
+            raise e
 
     async def updateAnimationCache(self):
         """ Update backend animation cache """
-        await update_cache()
+        try:
+            await update_cache()
+        except Exception as e:
+            logger.error('Failed to update animation cache', exc_info=e)
+            raise e
 
     async def getCachedAnimations(self):
         """ Get cached repository animations """
-        return {'animations': animation_cache}
+        try:
+            return {'animations': animation_cache}
+        except Exception as e:
+            logger.error('Failed to get cached animations', exc_info=e)
+            raise e
 
     async def getCachedAnimation(self, anim_id):
         """ Get a cached animation entry for id """
-        return find_cached_animation(anim_id)
+        try:
+            return find_cached_animation(anim_id)
+        except Exception as e:
+            logger.error('Failed to get cached animations', exc_info=e)
+            raise e
 
     async def downloadAnimation(self, anim_id):
         """ Download a cached animation for id """
-        for entry in config['downloads']:
-            if entry['id'] == anim_id:
-                return
-        async with aiohttp.ClientSession(connector=TCPConnector(family=socket.AF_INET) if config['force_ipv4'] else None) as web:
-            if (anim := find_cached_animation(anim_id)) is None:
-                raise_and_log(f'Failed to find cached animation with id: {id}')
-            async with web.get(anim['download_url'], ssl=ssl_ctx) as response:
-                if response.status != 200:
-                    raise_and_log(f'Invalid download request status: {response.status}')
-                data = await response.read()
-        with open(f'{DOWNLOADS_PATH}/{anim_id}.webm', 'wb') as f:
-            f.write(data)
-        config['downloads'].append(anim)
-        save_config()
+        try:
+            for entry in config['downloads']:
+                if entry['id'] == anim_id:
+                    return
+            async with aiohttp.ClientSession(connector=TCPConnector(family=socket.AF_INET) if config['force_ipv4'] else None) as web:
+                if (anim := find_cached_animation(anim_id)) is None:
+                    raise_and_log(f'Failed to find cached animation with id: {id}')
+                async with web.get(anim['download_url'], ssl=ssl_ctx) as response:
+                    if response.status != 200:
+                        raise_and_log(f'Invalid download request status: {response.status}')
+                    data = await response.read()
+            with open(f'{DOWNLOADS_PATH}/{anim_id}.webm', 'wb') as f:
+                f.write(data)
+            config['downloads'].append(anim)
+            save_config()
+        except Exception as e:
+            logger.error('Failed to download animation', exc_info=e)
+            raise e
 
     async def deleteAnimation(self, anim_id):
         """ Delete a downloaded animation """
-        config['downloads'] = [entry for entry in config['downloads'] if entry['id'] != anim_id]
-        save_config()
-        os.remove(f'{DOWNLOADS_PATH}/{anim_id}.webm')
+        try:
+            config['downloads'] = [entry for entry in config['downloads'] if entry['id'] != anim_id]
+            save_config()
+            os.remove(f'{DOWNLOADS_PATH}/{anim_id}.webm')
+        except Exception as e:
+            logger.error('Failed to delete animation', exc_info=e)
+            raise e
 
     async def saveSettings(self, settings):
         """ Save settings to config file """
-        config.update(settings)
-        save_config()
-        apply_animations()
+        try:
+            config.update(settings)
+            save_config()
+            apply_animations()
+        except Exception as e:
+            logger.error('Failed to save settings', exc_info=e)
+            raise e
 
     async def reloadConfiguration(self):
         """ Reload config file and local animations from disk """
-        await load_config()
-        load_local_animations()
-        apply_animations()
+        try:
+            await load_config()
+            load_local_animations()
+            apply_animations()
+        except Exception as e:
+            logger.error('Failed to reload configuration', exc_info=e)
+            raise e
 
     async def randomize(self, shuffle):
         """ Randomize animations """
-        if shuffle:
-            randomize_all()
-        else:
-            randomize_current_set()
-        save_config()
-        apply_animations()
+        try:
+            if shuffle:
+                randomize_all()
+            else:
+                randomize_current_set()
+            save_config()
+            apply_animations()
+        except Exception as e:
+            logger.error('Failed to randomize animations', exc_info=e)
+            raise e
 
     async def _main(self):
         logger.info('Initializing...')
 
-        os.makedirs(ANIMATIONS_PATH, exist_ok=True)
-        os.makedirs(OVERRIDE_PATH, exist_ok=True)
-        os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
-        os.makedirs(DOWNLOADS_PATH, exist_ok=True)
+        try:
+            os.makedirs(ANIMATIONS_PATH, exist_ok=True)
+            os.makedirs(OVERRIDE_PATH, exist_ok=True)
+            os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
+            os.makedirs(DOWNLOADS_PATH, exist_ok=True)
+        except Exception as e:
+            logger.error('Failed to make plugin directories', exc_info=e)
+            raise e
 
-        await load_config()
-        load_local_animations()
+        try:
+            await load_config()
+            load_local_animations()
+        except Exception as e:
+            logger.error('Failed to load config', exc_info=e)
+            raise e
 
-        if config['randomize'] == 'all':
-            randomize_all()
-        elif config['randomize'] == 'set':
-            randomize_current_set()
+        try:
+            if config['randomize'] == 'all':
+                randomize_all()
+            elif config['randomize'] == 'set':
+                randomize_current_set()
+        except Exception as e:
+            logger.error('Failed to randomize animations', exc_info=e)
+            raise e
 
         try:
             apply_animations()
-        except:
-            ...
+        except Exception as e:
+            logger.error('Failed to apply animations', exc_info=e)
+            raise e
 
         await asyncio.sleep(5.0)
         if unloaded:
             return
         try:
             await update_cache()
-        except:
-            ...
+        except Exception as e:
+            logger.error('Failed to update animation cache', exc_info=e)
+            raise e
 
         logger.info('Initialized')
 
