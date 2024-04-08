@@ -296,7 +296,7 @@ class Plugin:
                 }
             }
         except Exception as e:
-            logger.error('Failed to get state', exc_info=e)
+            decky_plugin.logger.error('Failed to get state', exc_info=e)
             raise e
 
     async def saveCustomSet(self, set_entry):
@@ -306,7 +306,7 @@ class Plugin:
             config['custom_sets'].append(set_entry)
             save_config()
         except Exception as e:
-            logger.error('Failed to save custom set', exc_info=e)
+            decky_plugin.logger.error('Failed to save custom set', exc_info=e)
             raise e
 
     async def removeCustomSet(self, set_id):
@@ -315,7 +315,7 @@ class Plugin:
             remove_custom_set(set_id)
             save_config()
         except Exception as e:
-            logger.error('Failed to remove custom set', exc_info=e)
+            decky_plugin.logger.error('Failed to remove custom set', exc_info=e)
             raise e
 
     async def enableSet(self, set_id, enable):
@@ -333,7 +333,7 @@ class Plugin:
                     save_config()
                     break
         except Exception as e:
-            logger.error('Failed to enable set', exc_info=e)
+            decky_plugin.logger.error('Failed to enable set', exc_info=e)
             raise e
 
     async def saveCustomAnimation(self, anim_entry):
@@ -343,7 +343,7 @@ class Plugin:
             config['custom_animations'].append(anim_entry)
             save_config()
         except Exception as e:
-            logger.error('Failed to save custom animation', exc_info=e)
+            decky_plugin.logger.error('Failed to save custom animation', exc_info=e)
             raise e
 
     async def removeCustomAnimation(self, anim_id):
@@ -352,7 +352,7 @@ class Plugin:
             remove_custom_animation(anim_id)
             save_config()
         except Exception as e:
-            logger.error('Failed to remove custom animation', exc_info=e)
+            decky_plugin.logger.error('Failed to remove custom animation', exc_info=e)
             raise e
 
     async def updateAnimationCache(self):
@@ -360,7 +360,7 @@ class Plugin:
         try:
             await update_cache()
         except Exception as e:
-            logger.error('Failed to update animation cache', exc_info=e)
+            decky_plugin.logger.error('Failed to update animation cache', exc_info=e)
             raise e
 
     async def getCachedAnimations(self):
@@ -368,7 +368,7 @@ class Plugin:
         try:
             return {'animations': animation_cache}
         except Exception as e:
-            logger.error('Failed to get cached animations', exc_info=e)
+            decky_plugin.logger.error('Failed to get cached animations', exc_info=e)
             raise e
 
     async def getCachedAnimation(self, anim_id):
@@ -376,7 +376,7 @@ class Plugin:
         try:
             return find_cached_animation(anim_id)
         except Exception as e:
-            logger.error('Failed to get cached animations', exc_info=e)
+            decky_plugin.logger.error('Failed to get cached animations', exc_info=e)
             raise e
 
     async def downloadAnimation(self, anim_id):
@@ -397,7 +397,7 @@ class Plugin:
             config['downloads'].append(anim)
             save_config()
         except Exception as e:
-            logger.error('Failed to download animation', exc_info=e)
+            decky_plugin.logger.error('Failed to download animation', exc_info=e)
             raise e
 
     async def deleteAnimation(self, anim_id):
@@ -407,7 +407,7 @@ class Plugin:
             save_config()
             os.remove(f'{DOWNLOADS_PATH}/{anim_id}.webm')
         except Exception as e:
-            logger.error('Failed to delete animation', exc_info=e)
+            decky_plugin.logger.error('Failed to delete animation', exc_info=e)
             raise e
 
     async def saveSettings(self, settings):
@@ -417,7 +417,7 @@ class Plugin:
             save_config()
             apply_animations()
         except Exception as e:
-            logger.error('Failed to save settings', exc_info=e)
+            decky_plugin.logger.error('Failed to save settings', exc_info=e)
             raise e
 
     async def reloadConfiguration(self):
@@ -427,7 +427,7 @@ class Plugin:
             load_local_animations()
             apply_animations()
         except Exception as e:
-            logger.error('Failed to reload configuration', exc_info=e)
+            decky_plugin.logger.error('Failed to reload configuration', exc_info=e)
             raise e
 
     async def randomize(self, shuffle):
@@ -440,7 +440,7 @@ class Plugin:
             save_config()
             apply_animations()
         except Exception as e:
-            logger.error('Failed to randomize animations', exc_info=e)
+            decky_plugin.logger.error('Failed to randomize animations', exc_info=e)
             raise e
 
     async def _main(self):
@@ -452,14 +452,14 @@ class Plugin:
             os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
             os.makedirs(DOWNLOADS_PATH, exist_ok=True)
         except Exception as e:
-            logger.error('Failed to make plugin directories', exc_info=e)
+            decky_plugin.logger.error('Failed to make plugin directories', exc_info=e)
             raise e
 
         try:
             await load_config()
             load_local_animations()
         except Exception as e:
-            logger.error('Failed to load config', exc_info=e)
+            decky_plugin.logger.error('Failed to load config', exc_info=e)
             raise e
 
         try:
@@ -468,13 +468,13 @@ class Plugin:
             elif config['randomize'] == 'set':
                 randomize_current_set()
         except Exception as e:
-            logger.error('Failed to randomize animations', exc_info=e)
+            decky_plugin.logger.error('Failed to randomize animations', exc_info=e)
             raise e
 
         try:
             apply_animations()
         except Exception as e:
-            logger.error('Failed to apply animations', exc_info=e)
+            decky_plugin.logger.error('Failed to apply animations', exc_info=e)
             raise e
 
         await asyncio.sleep(5.0)
@@ -483,7 +483,7 @@ class Plugin:
         try:
             await update_cache()
         except Exception as e:
-            logger.error('Failed to update animation cache', exc_info=e)
+            decky_plugin.logger.error('Failed to update animation cache', exc_info=e)
             raise e
 
         decky_plugin.logger.info('Initialized')
