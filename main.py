@@ -16,8 +16,8 @@ DOWNLOADS_PATH = os.path.join(decky_plugin.DECKY_PLUGIN_RUNTIME_DIR, 'downloads'
 OVERRIDE_PATH = os.path.expanduser('~/.steam/root/config/uioverrides/movies')
 
 BOOT_VIDEO = 'deck_startup.webm'
-SUSPEND_VIDEO = 'deck-suspend-animation.webm'
-THROBBER_VIDEO = 'deck-suspend-animation-from-throbber.webm'
+SUSPEND_VIDEO = 'steam_os_suspend.webm'
+THROBBER_VIDEO = 'steam_os_suspend_from_throbber.webm'
 
 VIDEOS_NAMES = [BOOT_VIDEO, SUSPEND_VIDEO, THROBBER_VIDEO]
 VIDEO_TYPES = ['boot', 'suspend', 'throbber']
