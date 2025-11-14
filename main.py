@@ -23,6 +23,7 @@ VIDEOS_NAMES = [BOOT_VIDEO, SUSPEND_VIDEO, THROBBER_VIDEO]
 VIDEO_TYPES = ['boot', 'suspend', 'throbber']
 VIDEO_TARGETS = ['boot', 'suspend', 'suspend']
 
+
 REQUEST_RETRIES = 5
 
 ssl_ctx = ssl.create_default_context(cafile=certifi.where())
@@ -109,7 +110,8 @@ async def load_config():
         'custom_animations': [],
         'custom_sets': [],
         'shuffle_exclusions': [],
-        'force_ipv4': False
+        'force_ipv4': False,
+        'randomize_sleep': ''
     }
 
     async def save_new():
@@ -292,7 +294,8 @@ class Plugin:
                     'suspend': config['suspend'],
                     'throbber': config['throbber'],
                     'shuffle_exclusions': config['shuffle_exclusions'],
-                    'force_ipv4': config['force_ipv4']
+                    'force_ipv4': config['force_ipv4'],
+                    'randomize_sleep': config['randomize_sleep']
                 }
             }
         except Exception as e:

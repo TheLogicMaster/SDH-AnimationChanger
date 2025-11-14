@@ -24,6 +24,7 @@ export interface PluginSettings {
   suspend: String;
   throbber: String;
   force_ipv4: boolean;
+  randomize_sleep: String
 }
 
 export interface Animation {
