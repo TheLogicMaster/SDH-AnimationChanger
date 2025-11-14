@@ -1,0 +1,714 @@
+DBussy is yet another Python binding for accessing D-Bus
+<https://www.freedesktop.org/wiki/Software/dbus/>. I know there is
+already dbus-python <http://dbus.freedesktop.org/doc/dbus-python/>,
+among others
+<https://www.freedesktop.org/wiki/Software/DBusBindings/>. So why do
+we need another one?
+
+The main issue is one of event loops. Most of the existing bindings
+seem to be based around GLib. However, Python now has its own
+“asyncio” event-loop architecture
+<https://docs.python.org/3/library/asyncio.html>. This goes back to
+Python 3.4, but as of 3.5, you now have full-fledged coroutines
+(“async def” and “await”) as a language feature.
+
+Every GUI toolkit already provides its own event loop; so why did
+the Python developers decide to add yet another one? The answer
+seems clear: to provide a language-standard API for event loops,
+and a reference implementation for this API. It should be possible
+to adapt other event loops to this same API, and then Python
+code written to work with asyncio becomes event-loop agnostic.
+
+
+What Is D-Bus?
+==============
+
+D-Bus is a high-level interprocess communication protocol. It also
+provides a standard daemon, that is included with the main Linux
+desktop environments, that implements a set of standard “buses”: a
+“system” bus that is created at system boot time, and a “session” bus
+that belongs to each user who logs into one of these desktop
+environments.
+
+Processes can register their services on one of these buses--the
+system bus for systemwide access, or the session bus for per-user
+access--where other processes can find them by name and connect to
+them. Or they can accept connections on entirely separate networking
+sockets, without any dependency on the D-Bus daemon. libdbus, the
+reference implementation for the low-level D-Bus protocol, supports
+both modes of operation.
+
+D-Bus is based around the concept of passing messages conforming to
+a standard, extensible format. Messages are of four types:
+  * a “method call”
+  * a “method return” (normal response to a method call)
+  * an “error” (abnormal response to a method call)
+  * a “signal” notification
+
+A method-call message is how one process requests a service of another
+process via D-Bus; the usual response would be a method-return message
+in the other direction indicating the completion status of the service
+being performed; it is also possible to send method-call messages
+without expecting a reply. If there was something wrong with the
+method-call message (e.g. inappropriate parameters, lack of
+permissions), then the response would be an error message. One could
+also send a method-return with information indicating a failure to
+perform the requested service; presumably the choice between the types
+of response is that an error return indicates a condition that is not
+supposed to happen--a bug in the requesting program.
+
+Signal messages are sent as notifications of interesting events
+pertaining to the current session (for the session bus) or the entire
+system (for the system bus). They are usually not sent to a specific
+destination, but can be picked up by all interested processes on the
+bus. There are no replies to signals; if the receiving process cannot
+or will not process a particular message, it simply ignores it.
+
+Messages optionally include the following information:
+  * a destination “bus name” indicating the process that is to
+    receive the message (this is not the name of the bus, but the
+    name of a connection to the bus)
+  * an “object path” which looks like a POSIX absolute file name
+    (always beginning with a slash and never ending with a slash,
+    except for the root object “/”); the meaning of this is up to
+    the receiving process, but it is intended to indicate some
+    object within the hierarchy exposed by the process
+  * an “interface name” which identifies the particular message
+    protocol
+  * a “method name” which identifies the particular function to be
+    performed within that interface.
+
+Bus names and interface names look like domain names with the components
+reversed, so the top level is at the beginning. If you are familiar with
+package names in Java, they take the same form, and with the same
+intent: to reduce the chance of name conflicts.
+
+D-Bus also includes an extensive, but not extensible, type system for
+encoding data in a message. This data represents arguments to the
+method call or signal, return results for a method return or the error
+name and message for an error. A message contains a sequence of 0, 1
+or more items of such data, each of which can be of various types:
+“basic” types (e.g. integer, float, string) or “container” types
+(structs, arrays, dictionaries) which in turn contain more values,
+each of which in turn can be of a basic or (recursively) another
+container type. A “signature” is a string encoding the type of a
+value, or sequence of values; there is also a “variant” type, which
+means the type of the value is encoded dynamically with the value
+itself, separate from the signature.
+
+The importance of type signatures is really up to the particular
+programs that are trying to communicate: some might insist on values
+exactly matching the expected type signature, whereas others might be
+more lenient. For example, while the D-Bus type system specifies
+different basic types for different sizes of integers of signed or
+unsigned varieties, most Python code will probably not care about the
+specific distinctions, and treat all these values as of type “int”.
+
+
+Standard Interfaces
+-------------------
+
+D-Bus defines some standard interfaces which are meant to be
+understood by most if not all services.
+
+One fundamental one is the “org.freedesktop.DBus.Introspectable”
+interface; this defines an “Introspect” method, that is expected to
+return an XML string that describes all the interfaces understood by
+the object identified by the object path, as well as listing all the
+available child objects that can be accessed by appending a slash and
+the child name to the parent object path, if any. Introspection is a
+very important part of D-Bus: it is what allows users to discover what
+services are available on their installations, and throw together
+ad-hoc scripts in Python or other high-level languages to make
+convenient use of such services, without having to write a lot of
+interfacing code.
+
+Another commonly-supported interface is called
+“org.freedesktop.DBus.Properties”. This one defines the concept of
+*properties*, which are pieces of data notionally attached to object
+paths, and which might be readable, writable or both. This interface
+defines standard methods to get a property value for an object, set a
+new property value, or get all properties defined on an object. It
+also specifies a signal that can be sent by a server process as a
+general notification to all peers on the bus about changes to its
+property values.
+
+
+Enter DBussy
+============
+
+DBussy allows you to take advantage of asyncio, but it doesn’t force
+you to use it. DBussy is meant to give you access to (nearly) all the
+functionality of the underlying libdbus library
+<https://dbus.freedesktop.org/doc/api/html/index.html>. libdbus is a
+very low-level, very general library, designed to be called from C
+code, that makes no assumptions about event loops at all. Consider the
+basic task in a client program of sending a D-Bus request message and
+waiting for a reply; or consider a server waiting for a message to
+come in. libdbus offers 3 different ways to handle this:
+
+  * poll repeatedly until the message appears
+  * block the thread until the message comes in
+  * specify a callback to be notified when the message is available
+
+DBussy offers access to all these ways. But it also gives you the
+option of engaging the asyncio event loop. This means you can be doing
+other things in the loop, and when a message comes in, it can be
+passed automatically to a callback that you previously specified.
+
+It also gives clients another way of sending a message and waiting for
+the reply: using a coroutine. For example
+
+    async def request_reply(connection) :
+        message = dbussy.Message.new_method_call(...)
+        ... other setup of message args etc ...
+        reply = await connection.send_await_reply(message, timeout)
+        ... process reply ...
+    #end request_reply
+
+    loop = asyncio.get_event_loop()
+    dbus_task = loop.create_task(request_reply(connection))
+    ... maybe create other tasks to run while awaiting reply ...
+    loop.run_until_complete(dbus_task)
+
+On the server side, you can correspondingly use coroutines to handle
+time-consuming requests without blocking the main loop. A message
+filter or object-path message callback can return, instead of
+DBUS.HANDLER_RESULT_HANDLED, a coroutine. The wrapper code will give
+libdbus a result of DBUS.HANDLER_RESULT_HANDLED on your behalf, after
+creating a task to execute the coroutine on the event loop. The
+coroutine can then go on to handle the actual processing of the
+request, and return the reply at some later stage.
+
+The dbussy module also offers several more Pythonic facilities beyond
+those of the underlying libdbus, including a higher-level
+representation of type signatures as Type objects (and subclasses
+thereof), and an Introspection object hierarchy that can be easily
+converted to and from the standard D-Bus introspection XML
+representation.
+
+
+No Type-Guessing!
+=================
+
+Unlike some other Python bindings for D-Bus libraries, DBussy never
+tries to guess how to convert Python types to D-Bus types. For
+example, D-Bus provides many different sizes of integer, in both
+signed and unsigned variants; when retrieving an integer parameter
+from a message, DBussy will convert all of these to Python integers,
+but when putting a Python integer into a message parameter, there must
+always be a signature somewhere specifying which specific D-Bus
+integer type to convert it to.
+
+Also, D-Bus variants are always represented in Python as a 2-tuple:
+the first element is the signature of the actual type being passed,
+and the second is the value of that type.
+
+
+Multithreading Caveats
+======================
+
+While libdbus was supposed to be usable with multithreaded code, in
+practice this has turned out to be problematic
+<https://lists.freedesktop.org/archives/dbus/2018-March/017428.html>.
+The whole point of Python’s asyncio framework is to avoid
+multithreading anyway.
+
+The dbussy module does use multithreading in a very limited way,
+in just one place: the Connection.open_async() call. It does this
+to give the effect of a nonblocking equivalent to a call for which
+libdbus only offers a blocking version.
+
+
+Ravel: The Higher-Level Interface
+=================================
+
+Rather than directly manipulating D-Bus message objects, it is usually
+more convenient to have a representation where D-Bus object paths are
+directly mapped to Python objects, and D-Bus method and signal calls
+are similarly mapped to calls on methods of those Python objects. So
+on the client side, the local Python objects become “proxies” for the
+actual objects implemented by the remote server. And on the server
+side, the implementation of an interface can be wrapped up in an
+“interface class” with methods that are automatically invoked in
+response to incoming D-Bus requests.
+
+Interface classes can also be used on the client side: in this
+situation, the method calls are just stubs used for type-checking
+outgoing requests, while the signal definitions can be real functions
+which are invoked in response to incoming signal messages. Conversely,
+on the server side, the signal definitions are stubs used for
+type-checking, while the method definitions (in the D-Bus sense) are
+real functions implementing those calls.
+
+An interface class can also be both client-side and server-side in
+one, which means all the method definitions are real, none are stubs.
+So it can be used both for type-checking outgoing messages and
+handling incoming ones. For example, this is true of both the common
+standard interfaces (Introspectable and Properties), since most if not
+all peers are expected to support them.
+
+(Signal definitions are a special case: even in a
+client-and-server-side interface, they can be marked as stubs--as in
+the standard PropertyHandler interface. This allows you to register
+such an interface for introspection purposes, without having to accept
+its handling of any signals.)
+
+Both kinds of interface representations are provided by the “ravel”
+module--interface classes on the client or server side, and proxy
+interfaces on the client side. Ravel also offers different ways to
+construct a proxy interface: you can define it yourself, or you can
+have Ravel construct it automatically for you by introspecting the
+server-side object.
+
+Either way, you start by creating a ravel.Connection object, which is a
+wrapper around a lower-level dbussy.Connection object. You can get one
+for the session or system bus by calling ravel.session_bus() and
+ravel.system_bus() respectively, or you can use a ravel.Server object
+(wrapping around the corresponding dbussy.Server) to accept
+connections on your own network address, separate from the D-Bus
+daemon.
+
+
+The Client Side: Proxy Interfaces
+---------------------------------
+
+Proxy interfaces can be easily constructed in different ways. One way
+is to start with a proxy for a bus peer with a particular name. You
+get one of these with an expression that treats the connection as
+though it were a mapping:
+
+    peer = conn[«bus_name»]
+
+Then you do another lookup on this mapping to get a reference to a
+particular object path at that peer:
+
+    obj = peer[«object_path»]
+
+Now, you can get a proxy for a desired interface thus:
+
+    iface = obj.get_interface(«interface_name»)
+
+which causes automatic introspection of that object path on the peer
+to obtain all the necessary type information for that interface (if it
+is not one of the standard interfaces). So calling a Python method on
+this object
+
+    results = iface.«method»(«args»)
+
+translates automatically to the corresponding D-Bus method call to
+that object and interface on the remote server, with full type
+checking done on both arguments and results.
+
+Note that the method result is always a list.
+
+D-Bus properties are automatically mapped to Python properties,
+so you can access their values and assign new ones in the usual
+Python way. For example, adding 1 to a numeric property (written
+out the long way to demonstrate property access on both the LHS
+and RHS of the assignment):
+
+    iface = conn[«bus_name»][«path»] \
+        .get_interface(«interface_name»)
+    iface.«prop» = iface.«prop» + 1
+
+The above are *blocking* calls, which means the current thread is
+blocked while waiting for the reply to the method call. If you want to
+do things in a more event-loop-friendly fashion, then use
+get_async_interface instead of get_interface, which returns a
+coroutine object that evaluates to an asynchronous version of the
+proxy object when it finally completes. Method calls and property
+accesses on this are automatically also coroutine calls, so you can
+use them in await-constructs in your coroutines, or create asyncio
+tasks to run them etc.
+
+Here is an example use of the above calls, which pops up a GUI
+notification displaying a short message for 5 seconds. Because the
+introspection of this interface supplies names for the arguments, it
+is possible to pass them to the method call by keyword:
+
+    ravel.session_bus()["org.freedesktop.Notifications"]["/org/freedesktop/Notifications"] \
+        .get_interface("org.freedesktop.Notifications") \
+        .Notify \
+          (
+            app_name = "test",
+            replaces_id = 0,
+            app_icon = "dialog-information",
+            summary = "Hello World!",
+            body = "DBussy works!",
+            actions = [],
+            hints = {},
+            timeout = 5000,
+          )
+
+(But note that the argument names might differ, depending on your
+Linux distro version. If you get errors saying certain argument names
+are not understood, try it without the argument names. Or do your own
+introspection of the interface, to decide what argument names should
+be used.)
+
+
+Proxy Interfaces: Alternative Order
+-----------------------------------
+
+The above access to proxy interfaces could be described as
+“bus name-path-interface”, after the order in which the components
+are specified. Proxies can also be obtained in “bus name-interface-path”
+order. This can be convenient for obtaining a proxy interface object
+that can then be used to make calls on multiple objects.
+
+In this method, an initial *root* proxy is obtained thus:
+
+   iface_root = conn[«bus_name»].get_interface \
+     (
+        path = «initial_path»,
+        interface = «interface_name»,
+     )
+
+Note you need to specify an object path for this initial introspection;
+it is probably best to use the shortest (highest-level) path that
+supports that interface. Depending on the peer, the root path “/” might work.
+
+From this, you get the proxy for the interface on an actual object by
+using the object path as a lookup key, e.g.
+
+    iface = iface_root[«path»]
+
+From here, you can invoke the method calls and access properties
+in the same way as before, e.g.
+
+    iface.«method»(«args»)
+    ... iface.«prop» ...
+
+
+Asynchronous Properties
+-----------------------
+
+As mentioned, both property and method access can be done asynchronously
+on an event loop. Asynchronous *reading* of a property is easy
+enough to express:
+
+    val = await obj.«prop»
+
+But how do you do asynchronous *writing* of the property? The obvious
+construct
+
+    await obj.«prop» = newval
+
+produces a syntax error: Python doesn’t (at least as of 3.6!) allow
+“await” on the left-hand side of an assignment. Instead, you
+write it as though it were a blocking call:
+
+    obj.«prop» = newval
+
+but because the interface is defined as asynchronous, this causes
+a task to be queued on the event loop to oversee the completion of
+the set-property call, and your code can continue execution before
+this task completes.
+
+The main consequence of this is that any error exception will be
+raised asynchronously. But if you don’t like the idea that execution
+will be deferred, you can await the completion of all such pending
+property-setting calls with the following call on the root proxy:
+
+    await iface_root.set_prop_flush()
+
+or on the actual proxy interface:
+
+    await ravel.set_prop_flush(iface)
+
+whichever is more convenient. This means you can batch up a whole
+series of property-setting calls on any number of objects on the same
+interface and bus name, then wait for them all to complete with a
+single flush call.
+
+
+Interface Classes
+-----------------
+
+The more structured high-level interface offered by Ravel is built
+around the concept of an *interface class*, which is a Python class
+that represents a D-Bus interface, either as an actual implementation
+or as a “proxy” for making calls to another bus peer. You can then
+register instances of this class on a bus connection at selected
+points in your object path hierarchy, to handle either only specific
+objects at those paths or as a fallback to also deal with objects
+at points below those, that do not have their own instance of this
+class registered.
+
+An interface class is identified by applying the @ravel.interface()
+decorator to the class definition, specifying the kind of interface
+(for use client-side, server-side or both), and the interface name, e.g.
+
+    @ravel.interface(ravel.INTERFACE.SERVER, name = "com.example.my_interface")
+    class MyClass :
+        ...
+    #end MyClass
+
+The meanings of the first, “kind”, argument to @ravel.interface are
+as follows:
+  * INTERFACE.SERVER -- you are the server implementing the method
+    calls defined by this interface. However, the signal definitions
+    are just “stubs” used for type-checking when you send those signals
+    over the bus. This interface definition can also be introspected
+    to inform users about the facilities provided by the interface.
+  * INTERFACE.CLIENT -- you are a client wanting to communicate with
+    a server that implements this interface. The method calls are
+    just stubs used for type-checking when you send those calls over
+    the bus. The signal definitions can be your actual functions
+    that you want to be invoked when those signals are received, or
+    they can also be stubs.
+  * INTERFACE.CLIENT_AND_SERVER -- both of the above; you implement
+    the methods, and maybe the signals as well, and you can also use
+    their definitions to send corresponding method and signal calls to
+    peers that implement the same interface. The standard interfaces
+    (Peer, Introspectable, Properties) are defined in this way.
+
+Within such a class, Python methods that are to handle D-Bus method
+calls are identified with the @ravel.method() decorator, e.g.:
+
+    @ravel.method \
+      (
+        name = ...,
+        in_signature = ...,
+        out_signature = ...,
+        args_keyword = ...,
+        arg_keys = ...,
+        arg_attrs = ...,
+        result_keyword = ...,
+        result_keys = ...,
+        result_attrs = ...,
+        connection_keyword = ...,
+        message_keyword = ...,
+        path_keyword = ...,
+        bus_keyword = ...,
+        set_result_keyword = ...,
+        ...
+      )
+    def my_method(...) :
+        ...
+    #end my_method
+
+As you can see, there are a large number of options for implementing
+such a method. It can also be defined as a coroutine with async def if
+you have an event loop attached, and Ravel will automatically queue
+the task for execution and await any returned result. Partial summary
+of arguments:
+  * name -- the D-Bus method name. If omitted, defaults to the Python
+    function name.
+  * in_signature -- the D-Bus signature specifying the arguments (zero or more)
+    to the method.
+  * out_signature -- the D-Bus signature specifying the results (zero
+    or more) the method will return.
+  * args_keyword -- the name of an argument to the Python function that will
+    be set to the arguments from the message method call. The arguments
+    will be passed as a list, or a dict, or an attributed class, depending the
+    specification of arg_keys and arg_attrs (see below).
+  * path_keyword -- if specified, then the object path field from the
+    incoming method call will be passed to the Python function as the
+    value of the argument with this name.
+  * message_keyword -- if specified, then the dbussy.Message object
+    for the incoming method call will be passed to the Python function
+    as the value of the argument with this name.
+  * connection_keyword -- if specified, then the dbussy.Connection object
+    will be passed to the Python function as the value of the argument
+    with this name.
+  * bus_keyword -- if specified, then the ravel.Connection object
+    will be passed to the Python function as the value of the argument
+    with this name.
+  * set_result_keyword -- if specified, then a function of a single
+    argument will be passed to the Python function as the value of the
+    argument with this name; the argument passed by calling this
+    function becomes the method result.
+
+Passing arguments: the argument with the name given by args_keyword
+will hold the extracted arguments from the method call message. If
+neither of arg_keys or arg_attrs is specified, then the arguments are
+passed as a list. If arg_keys is specified, then it must be a sequence
+of names that must match the number of types specified by the
+in_signature; in this case, the args will be passed as a dict with the
+keys given in arg_keys associated in order with the argument values.
+
+If arg_attrs is specified instead of arg_keys, then it must be a
+sequence of names that must match the number of types specified by the
+in_signature; a mutable attributed class object is created by calling
+ravel.def_attr_class, with the attribute names taken from arg_keys
+assigned in order to the argument values.
+
+Returning results: the function can return the result values to be
+inserted into the method-return message as the function result, by
+assigning to elements of a mutable result argument (passed as the
+argument named by result_keyword, or by calling the set_result
+function that was passed via the set_result_keyword (above).
+
+If neither result_keys nor result_attrs is specified, then the result
+is expected to be a sequence of values matching the out_signature. If
+it is returned as the function result, then it can be a tuple or list;
+but if result_keyword is specified, then the value of this is a list,
+and the values in the sequence must be assigned to the elements of
+this list in-place.
+
+If result_keys is specified, then the result is a dict mapping the
+names from result_keys to the values of the result sequence in order.
+If result_attrs is specified, then the result is a mutable attributed
+class object created by calling ravel.def_attr_class, mapping the
+names from result_attrs to the values of the result sequence in order.
+If result_keyword is not specified, then the result object is expected
+to be returned as the function result; otherwise, it is passed as the
+value of the argument named by result_keyword, and the handler is
+supposed to update its elements in-place.
+
+Signal definitions look similar, except they return no results:
+
+    @ravel.signal \
+      (
+        name = ...,
+        in_signature = ...,
+        args_keyword = ...,
+        arg_keys = ...,
+        arg_attrs = ...,
+        connection_keyword = ...,
+        message_keyword = ...,
+        path_keyword = ...,
+        bus_keyword = ...,
+        stub = ...,
+        ...
+      )
+    def my_signal(...) :
+        ...
+    #end my_signal
+
+Also note the “stub” argument--this has meaning on a client-side
+interface to indicate that the interface class does not implement
+the listener for the signal, but that it is registered separately
+with a listen_signal call. This is used for the PropertiesChanged
+signal in ravel.PropertyHandler (the standard handler for the
+DBUS.INTERFACE_PROPERTIES interface), so that you do not have
+to replace the class just to install your own listeners for this
+signal.
+
+Properties are defined by implementing getter and/or setter
+methods, identified by @propgetter() and @propsetter() decorators
+respectively:
+
+    @ravel.propgetter \
+      (
+        name = ...,
+        type = ...,
+        name_keyword = ...,
+        connection_keyword = ...,
+        message_keyword = ...,
+        path_keyword = ...,
+        bus_keyword = ...,
+        change_notification = ...
+      )
+    def my_propgetter(...) :
+        ...
+        return \
+            «value»
+    #end my_propgetter
+
+    @ravel.propsetter \
+      (
+        name = ...,
+        type = ...,
+        name_keyword = ...,
+        type_keyword = ...,
+        value_keyword = ...,
+        connection_keyword = ...,
+        message_keyword = ...,
+        path_keyword = ...,
+        bus_keyword = ...
+      ) :
+    def my_propsetter(...) :
+        ...
+    #end my_propsetter
+
+Note the following arguments:
+  * type -- the type signature for permitted property values.
+  * change_notification -- one of the dbussy.PROP_CHANGE_NOTIFICATION values
+    indicating whether (and what kind of) signals should be generated for
+    changes to this property value. This is specified on the @propgetter(),
+    because there is no point notifying about write-only properties.
+  * type_keyword -- for passing the actual type of the new property value
+    to the setter.
+  * value_keyword -- for passing the new property value to the setter.
+
+Getters and setters can be coroutines.
+
+
+Custom User Data
+----------------
+
+With Ravel’s interface classes, it is possible to attach your own
+user data items to arbitrary points in the object path tree. To
+obtain the user data dictionary for a given object path, do either
+
+    user_data = bus.user_data["/com/example/myapp"]
+
+or
+
+    user_data = bus.user_data["com", "example", "myapp"]
+
+The result is a dictionary into which you can insert whatever
+key-value pairs you like, e.g.:
+
+    user_data["com.example.myapp.attribs"] = MyObj(...)
+
+
+Predefined Interface Classes
+----------------------------
+
+Ravel provides predefined interface classes for the
+org.freedesktop.DBus.Peer, org.freedesktop.DBus.Introspectable and
+org.freedesktop.DBus.Properties interfaces, and these are
+automatically registered on Connection instances. The Peer interface
+is just a stub, since the actual implementation is hard-coded into
+libdbus itself; it is there to provide automatic introspection of this
+interface.
+
+The ravel.IntrospectionHandler class defines the standard
+Introspectable interface, and provides automatic introspection of all
+interfaces registered with a ravel.Connection (including itself and
+the other standard interfaces). It extracts the information specified
+to the class, method, signal and property-handler decorators, and
+generates the appropriate XML form for returning to D-Bus queries.
+
+The ravel.PropertyHandler class defines the standard Properties
+interface, and automatically dispatches to @propgetter() and
+@propsetter() methods as defined in your registered interface classes.
+
+The ravel.ManagedObjectsHandler class defines the standard
+ObjectManager interface. It handles sending out of notifications as
+you call the object_added() and object_removed() methods on a
+Connection. It is not automatically registered on a Connection object;
+you have to add it manually. If you already have a ravel.Connection
+object «conn», then you can do so with
+
+    «conn».register_additional_standard(managed_objects = True)
+
+Alternatively, you can request this registration at the time of
+creating the Connection object in one step, for example with
+
+    bus = ravel.session_bus(managed_objects = True)
+
+
+DBussy Examples
+===============
+
+Sample code illustrating how to use DBussy/Ravel is available in my
+dbussy_examples repo on GitLab <https://gitlab.com/ldo/dbussy_examples>
+and GitHub <https://github.com/ldo/dbussy_examples>.
+
+
+How Do You Pronounce “DBussy”?
+==============================
+
+The name is a pun on “dbus” and the name of French Impressionist
+composer Claude Debussy. The most natural way to pronounce it would be
+the same as his name. At least, that’s my story, and I’m sticking to
+it.
+
+
+Lawrence D'Oliveiro <ldo@geek-central.gen.nz>
+2020 February 2
