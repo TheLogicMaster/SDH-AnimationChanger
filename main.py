@@ -5,10 +5,27 @@ import os
 import random
 import socket
 import ssl
+import sys
 import aiohttp
 import certifi
 from aiohttp import ClientSession, TCPConnector
 import decky_plugin
+import importlib.util
+from pathlib import Path
+
+def get_plugin_dir():
+    from pathlib import Path
+    return Path(__file__).parent.resolve()
+
+def add_plugin_to_path():
+    import sys
+
+    plugin_dir = get_plugin_dir()
+    directories = [["./"], ["dbussy"], ["defaults", "dbussy"], ["defaults", "lib"], ["lib"]]
+    for dir in directories:
+        sys.path.append(str(plugin_dir.joinpath(*dir)))
+add_plugin_to_path()
+import ravel
 
 CONFIG_PATH = os.path.join(decky_plugin.DECKY_PLUGIN_SETTINGS_DIR, 'config.json')
 ANIMATIONS_PATH = os.path.join(decky_plugin.DECKY_PLUGIN_RUNTIME_DIR, 'animations')
@@ -23,6 +40,7 @@ VIDEOS_NAMES = [BOOT_VIDEO, SUSPEND_VIDEO, THROBBER_VIDEO]
 VIDEO_TYPES = ['boot', 'suspend', 'throbber']
 VIDEO_TARGETS = ['boot', 'suspend', 'suspend']
 
+
 REQUEST_RETRIES = 5
 
 ssl_ctx = ssl.create_default_context(cafile=certifi.where())
@@ -32,6 +50,9 @@ local_animations = []
 local_sets = []
 animation_cache = []
 unloaded = False
+
+
+
 
 
 async def get_steamdeckrepo():
@@ -109,7 +130,8 @@ async def load_config():
         'custom_animations': [],
         'custom_sets': [],
         'shuffle_exclusions': [],
-        'force_ipv4': False
+        'force_ipv4': False,
+        'randomize_sleep': ''
     }
 
     async def save_new():
@@ -292,7 +314,8 @@ class Plugin:
                     'suspend': config['suspend'],
                     'throbber': config['throbber'],
                     'shuffle_exclusions': config['shuffle_exclusions'],
-                    'force_ipv4': config['force_ipv4']
+                    'force_ipv4': config['force_ipv4'],
+                    'randomize_sleep': config['randomize_sleep']
                 }
             }
         except Exception as e:
@@ -443,8 +466,42 @@ class Plugin:
             decky_plugin.logger.error('Failed to randomize animations', exc_info=e)
             raise e
 
+    @ravel.signal(name="PrepareForSleep", in_signature="b", args_keyword="args")
+    def handle_sleep_signal(args):
+        sleeping = args[0]     
+        if sleeping:
+            if config['randomize_sleep'] == 'all':
+                randomize_all()
+                decky_plugin.logger.info('Deck went to sleep! Randomizing all animations...')
+            if config['randomize_sleep'] == 'set':
+                randomize_current_set()
+                decky_plugin.logger.info('Deck went to sleep! Randomizing animation set...')
+
+            apply_animations()
+
+        else:
+            decky_plugin.logger.info('wakey')
+
+
+
+
+            
     async def _main(self):
         decky_plugin.logger.info('Initializing...')
+        try:
+            loop = asyncio.get_event_loop()
+            self.bus = ravel.system_bus()
+            self.bus.attach_asyncio(loop)
+
+            self.bus.listen_signal(
+                path="/org/freedesktop/login1",
+                fallback=False,
+                interface="org.freedesktop.login1.Manager",
+                name="PrepareForSleep",
+                func=self.handle_sleep_signal
+            )
+        except Exception as e:
+            decky_plugin.logger.error('Failed to make bus object', exc_info=e)
 
         try:
             os.makedirs(ANIMATIONS_PATH, exist_ok=True)

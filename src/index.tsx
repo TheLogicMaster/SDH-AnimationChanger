@@ -141,6 +141,14 @@ const Content: FC = () => {
 
                 <PanelSectionRow>
                     <ToggleField
+                    label='Shuffle on Sleep'
+                    onChange={(checked) => { saveSettings({ ...settings, randomize_sleep: (checked) ? 'all' : '' }) }}
+                    checked={settings.randomize_sleep == 'all'}
+                    />
+                </PanelSectionRow>
+
+                <PanelSectionRow>
+                    <ToggleField
                     label='Force IPv4'
                     onChange={(checked) => { saveSettings({ ...settings, force_ipv4: checked }) }}
                     checked={settings.force_ipv4}
