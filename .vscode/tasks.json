@@ -84,19 +84,10 @@
             "dependsOrder": "sequence",
             "group": "none",
             "dependsOn": [
-                "chmodfolders",
                 "deploy",
+                "chmodfolders"
             ],
             "problemMatcher": []
-        },
-        {
-           "label": "deploylocally",
-            "detail": "moves files to plugins/",
-            "type": "shell",
-            "group": "none",
-            "command": "sudo cp -rp --update --parents $(find . -path ./.git -prune -o -path ./.github -prune -o -path ./.vscode -prune -o -path ./node_modules -prune -o -path ./src -prune -o -name '*.log' -prune -o -name '.gitignore' -prune -o -print) /home/violet/homebrew/plugins/${workspaceFolderBasename}",
-            "problemMatcher": []
-
         },
         // ALL-IN-ONE
         {
