@@ -13,7 +13,17 @@ import decky_plugin
 CONFIG_PATH = os.path.join(decky_plugin.DECKY_PLUGIN_SETTINGS_DIR, 'config.json')
 ANIMATIONS_PATH = os.path.join(decky_plugin.DECKY_PLUGIN_RUNTIME_DIR, 'animations')
 DOWNLOADS_PATH = os.path.join(decky_plugin.DECKY_PLUGIN_RUNTIME_DIR, 'downloads')
-OVERRIDE_PATH = os.path.expanduser('~/.steam/root/config/uioverrides/movies')
+
+
+def get_override_path():
+    steam_root = os.path.expanduser('~/.steam/root')
+    # Preserve existing installations, including custom and dangling symlinks.
+    # Never create the compatibility root as a directory before Steam does.
+    if os.path.lexists(steam_root):
+        steam_root = os.path.realpath(steam_root)
+    else:
+        steam_root = os.path.expanduser('~/.local/share/Steam')
+    return os.path.join(steam_root, 'config', 'uioverrides', 'movies')
 
 BOOT_VIDEO = 'deck_startup.webm'
 SUSPEND_VIDEO = 'steam_os_suspend.webm'
@@ -207,7 +217,9 @@ def find_cached_animation(anim_id):
 
 
 def apply_animation(video, anim_id):
-    override_path = f'{OVERRIDE_PATH}/{video}'
+    override_directory = get_override_path()
+    os.makedirs(override_directory, exist_ok=True)
+    override_path = os.path.join(override_directory, video)
     if os.path.islink(override_path) or os.path.exists(override_path):
         os.remove(override_path)
 
@@ -448,7 +460,7 @@ class Plugin:
 
         try:
             os.makedirs(ANIMATIONS_PATH, exist_ok=True)
-            os.makedirs(OVERRIDE_PATH, exist_ok=True)
+            os.makedirs(get_override_path(), exist_ok=True)
             os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
             os.makedirs(DOWNLOADS_PATH, exist_ok=True)
         except Exception as e:

@@ -41,7 +41,19 @@ not in a game, and `"throbber"` refers to the animation played when suspending f
 ## Internals
 - The main config file and downloaded animations are stored in `$DECKY_HOME/homebrew/settings/Animation Changer/`
 - View the log file in `$DECKY_HOME/homebrew/logs/Animation Changer/`
-- Animations get enabled by creating symlinks in the override directory, `~/.steam/root/config/uioverrides/movies`
+- Animations get enabled by creating symlinks in the Steam root's `config/uioverrides/movies` directory.
+  Existing `~/.steam/root` directories and symlink targets (including custom locations) are preserved.
+  If that compatibility path does not exist yet, the plugin uses `~/.local/share/Steam` without
+  creating `~/.steam/root`, leaving Steam free to create its own compatibility symlink.
+  The path is resolved again when applying animations so a subsequently created Steam link is honored.
+  This prevents new path collisions; an already malformed `~/.steam/root` directory is not
+  automatically moved or deleted. Back up its contents before any manual repair.
+
+## Backend tests
+Run `python3 -m unittest discover -s tests -v` (standard library only).
+The tests load backend functions with temporary home directories and stubbed Decky/network calls,
+without importing optional plugin dependencies or starting Steam or Decky.
+Run on Linux to include the Steam bootstrap regression using real Unix symlink semantics.
 
 ## Building
 Install pnpm and run `pnpm i` in the repo directory. Build with: `pnpm run build`. Copying the
